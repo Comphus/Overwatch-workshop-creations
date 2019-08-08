@@ -1,0 +1,13 @@
+A social game where players are randomly assigned innocent/guilty with 1 judge
+The judge is the leader of the courtroom and he gives the final verdict.
+
+People who get the the actual verdict right when the judge gets it wrong will gain double the amount of points, and lose double the amount if the judge is right but they are wrong.
+If you follow the judge's decision, you will either gain or lose 2 points based on if the person's role matches the decision.
+
+As the judge, you will gain or lose an additional 6 points based on your judgement accuracy. If you wrongly convict someone you lose 6 points, if you correctly convict someone you gain 6 points.
+
+As an innocent person who is brought up to trail, you will gain 1-2x the amount of votes for a certain verdict based on what the judge chooses as points.
+If you are innocent, the judge says youre innocent and 5 people say you are guilty, you will gain 1x the amount of votes for innocent as points
+If you are innocent, the judge says youre guilty and 5 people say you are guilty, you will lose 2x the amount of votes for guilty as points
+
+If you are guilty, the judge says youre innocent and 5 people say you are innocent, you will gain 1x the amount of votes for innocent as points

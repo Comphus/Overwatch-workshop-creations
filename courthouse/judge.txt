@@ -1,0 +1,707 @@
+rule("faster start")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Assembling Heroes == True;
+	}
+
+	actions
+	{
+		Set Match Time(5);
+	}
+}
+
+rule("init game")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Is Assembling Heroes != True;
+	}
+
+	actions
+	{
+		Set Match Time(2700);
+		Set Global Variable(A, Empty Array);
+		Set Global Variable(B, Empty Array);
+		Set Global Variable(C, Null);
+		Set Global Variable(D, Empty Array);
+		Set Global Variable(E, Empty Array);
+		Set Global Variable(F, Null);
+		Set Global Variable(G, Empty Array);
+		Set Global Variable(H, False);
+		Set Global Variable(J, Empty Array);
+		Set Global Variable(K, Empty Array);
+		Set Global Variable(Y, 0);
+		Set Global Variable(Z, Empty Array);
+		Set Global Variable(X, True);
+		Disable Built-In Game Mode Scoring;
+	}
+}
+
+rule("randomly assign roles + init base vars")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, B, 0);
+		Set Player Variable(Event Player, C, 0);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, E, Empty Array);
+		Set Player Variable(Event Player, F, 0);
+		Set Player Variable(Event Player, Z, Random Integer(0, 2));
+		Skip If(Compare(Add(Count Of(Global Variable(D)), Count Of(Global Variable(E))), !=, Subtract(Count Of(All Players(All Teams)),
+			1)), 1);
+		Set Player Variable(Event Player, Z, 0);
+		Skip If(Or(Compare(Player Variable(Event Player, Z), !=, 0), Compare(Global Variable(C), !=, Null)), 1);
+		Set Global Variable(C, Event Player);
+		Skip If(Compare(Player Variable(Event Player, Z), !=, 1), 1);
+		Modify Global Variable(D, Append To Array, Event Player);
+		Skip If(Compare(Player Variable(Event Player, Z), !=, 2), 1);
+		Modify Global Variable(E, Append To Array, Event Player);
+		Wait(0.016, Ignore Condition);
+		Skip If(Or(Compare(Player Variable(Event Player, Z), !=, 0), Compare(Event Player, ==, Global Variable(C))), 5);
+		Set Player Variable(Event Player, Z, Random Integer(1, 2));
+		Skip If(Compare(Player Variable(Event Player, Z), !=, 1), 1);
+		Modify Global Variable(D, Append To Array, Event Player);
+		Skip If(Compare(Player Variable(Event Player, Z), !=, 2), 1);
+		Modify Global Variable(E, Append To Array, Event Player);
+		Set Max Health(Event Player, Absolute Value(10000));
+		Set Healing Received(Event Player, Absolute Value(10000));
+		Start Heal Over Time(Event Player, Event Player, 4, 9999);
+	}
+}
+
+rule("init judge")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Primary Fire Enabled(Event Player, False);
+		Set Secondary Fire Enabled(Event Player, False);
+		Set Ability 1 Enabled(Event Player, False);
+		Set Ability 2 Enabled(Event Player, False);
+		Set Ultimate Ability Enabled(Event Player, False);
+		Create HUD Text(Event Player, String("Leader", Null, Null, Null), Null, Null, Top, -5.000, White, White, White,
+			Visible To and String);
+		Create In-World Text(All Players(All Teams), String("Leader", Null, Null, Null), Event Player, 1, Do Not Clip,
+			Visible To Position and String);
+		Create Icon(All Players(All Teams), Event Player, Diamond, Visible To and Position, White, True);
+		Create HUD Text(Event Player, String("{0} + {1}", String("Interact", Null, Null, Null), String("{0}: {1}", String("Primary Fire",
+			Null, Null, Null), String("{0} {1}", String("Load", Null, Null, Null), String("Building", Null, Null, Null), Null), Null),
+			Null), Null, Null, Left, 1, White, White, White, Visible To and String);
+		Create HUD Text(Event Player, String("{0} + {1}", String("Interact", Null, Null, Null), String("{0}: {1}", String("Secondary Fire",
+			Null, Null, Null), String("{0} {1}", String("Load", Null, Null, Null), String("Location", Null, Null, Null), Null), Null),
+			Null), Null, Null, Left, 2, White, White, White, Visible To and String);
+		Create HUD Text(Event Player, String("{0} + {1}", String("Interact", Null, Null, Null), String("{0}: {1}", String(
+			"Ultimate Ability", Null, Null, Null), String("{0} {1}", String("Final", Null, Null, Null), String("Innocent", Null, Null,
+			Null), Null), Null), Null), Null, Null, Left, 3, White, White, White, Visible To and String);
+		Create HUD Text(Event Player, String("{0} + {1}", String("Interact", Null, Null, Null), String("{0}: {1}", String("Ability 2",
+			Null, Null, Null), String("{0} {1}", String("Final", Null, Null, Null), String("Guilty", Null, Null, Null), Null), Null),
+			Null), Null, Null, Left, 4, White, White, White, Visible To and String);
+	}
+}
+
+rule("init innocent")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Array Contains(Global Variable(D), Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, 0);
+		Set Primary Fire Enabled(Event Player, False);
+		Set Secondary Fire Enabled(Event Player, False);
+		Set Ability 1 Enabled(Event Player, False);
+		Set Ability 2 Enabled(Event Player, False);
+		Set Ultimate Ability Enabled(Event Player, False);
+		Create HUD Text(Event Player, String("Innocent", Null, Null, Null), Null, Null, Top, -5.000, Blue, White, White,
+			Visible To and String);
+	}
+}
+
+rule("init guilty")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Array Contains(Global Variable(E), Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, 0);
+		Set Primary Fire Enabled(Event Player, False);
+		Set Secondary Fire Enabled(Event Player, False);
+		Set Ability 1 Enabled(Event Player, False);
+		Set Ability 2 Enabled(Event Player, False);
+		Set Ultimate Ability Enabled(Event Player, False);
+		Create HUD Text(Event Player, String("Guilty", Null, Null, Null), Null, Null, Top, -5.000, Red, White, White,
+			Visible To and String);
+	}
+}
+
+rule("multiple jumps on space")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is In Air(Event Player) == True;
+		Is Button Held(Event Player, Jump) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Up, 6, To World, Cancel Contrary Motion);
+	}
+}
+
+rule("judge creates courtroom")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Primary Fire) == True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Destroy Effect(Value In Array(Global Variable(A), 2));
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(A, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Set Global Variable At Index(A, 0, Position Of(Event Player));
+		Set Global Variable At Index(A, 1, 10);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 0), Value In Array(Global Variable(A),
+			1), Visible To Position and Radius);
+		Set Global Variable At Index(A, 2, Last Created Entity);
+	}
+}
+
+rule("judge creates podium")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Secondary Fire) == True;
+		Has Spawned(Event Player) == True;
+		Count Of(Global Variable(A)) >= 3;
+	}
+
+	actions
+	{
+		Set Global Variable At Index(B, 0, Ray Cast Hit Position(Eye Position(Event Player), Add(Eye Position(Event Player), Multiply(
+			Facing Direction Of(Event Player), 50)), Null, Event Player, False));
+		Set Global Variable At Index(B, 1, 1);
+		Create Effect(All Players(All Teams), Ring, Green, Value In Array(Global Variable(B), 0), Value In Array(Global Variable(B), 1),
+			Visible To Position and Radius);
+		Set Global Variable At Index(B, 2, Last Created Entity);
+	}
+}
+
+rule("no escape courtroom")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Position Of(Event Player), Value In Array(Global Variable(A), 0)) > Value In Array(Global Variable(A), 1);
+		Count Of(Global Variable(A)) >= 3;
+	}
+
+	actions
+	{
+		Teleport(Event Player, Add(Value In Array(Global Variable(A), 0), Vector(0, Add(1, Multiply(0.200, Slot Of(Event Player))), 0)));
+		Wait(0.700, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("judge increase room size")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Has Spawned(Event Player) == True;
+		Value In Array(Global Variable(A), 1) <= 20;
+		Count Of(Global Variable(A)) >= 3;
+		Is Button Held(Event Player, Ability 2) == True;
+		Is Button Held(Event Player, Interact) != True;
+	}
+
+	actions
+	{
+		Modify Global Variable At Index(A, 1, Add, 0.500);
+		Wait(0.250, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("judge decrease room size")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Has Spawned(Event Player) == True;
+		Value In Array(Global Variable(A), 1) >= 5;
+		Count Of(Global Variable(A)) >= 3;
+		Is Button Held(Event Player, Ultimate) == True;
+		Is Button Held(Event Player, Interact) != True;
+	}
+
+	actions
+	{
+		Modify Global Variable At Index(A, 1, Subtract, 0.500);
+		Wait(0.250, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("teleport all players to courtroom on creation")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Count Of(Global Variable(A)) >= 3;
+		Event Player != Global Variable(C);
+	}
+
+	actions
+	{
+		Teleport(Event Player, Add(Value In Array(Global Variable(A), 0), Vector(0, Add(1, Multiply(0.200, Slot Of(Event Player))), 0)));
+	}
+}
+
+rule("start judging when on circle")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player != Global Variable(C);
+		Distance Between(Event Player, Value In Array(Global Variable(B), 0)) <= Value In Array(Global Variable(B), 1);
+		Global Variable(F) == Null;
+		Count Of(Global Variable(A)) >= 3;
+		Count Of(Global Variable(B)) >= 3;
+		Player Variable(Event Player, C) == 0;
+	}
+
+	actions
+	{
+		Set Player Variable At Index(All Players(All Teams), D, Count Of(Global Variable(G)), 0);
+		Destroy HUD Text(Value In Array(Global Variable(F), 1));
+		Destroy HUD Text(Value In Array(Global Variable(F), 2));
+		Destroy HUD Text(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 4));
+		Wait(0.032, Ignore Condition);
+		Set Global Variable At Index(F, 0, Event Player);
+		Set Status(Event Player, Global Variable(C), Rooted, 1800);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), Global Variable(F), String("{0} -> {1}", String("Use Ultimate Ability", Null, Null, Null),
+			String("Innocent", Null, Null, Null), Null), String("{0} -> {1}", String("Use Ability 2", Null, Null, Null), String("Guilty",
+			Null, Null, Null), Null), Top, 10, White, Blue, Red, Visible To and String);
+		Set Global Variable At Index(F, 1, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Innocent", Null, Null, Null), Count Of(Filtered Array(
+			All Players(All Teams), Compare(Player Variable(Current Array Element, B), ==, 1))), Null), Null, Null, Top, 20, Blue, White,
+			White, Visible To and String);
+		Set Global Variable At Index(F, 2, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Guilty", Null, Null, Null), Count Of(Filtered Array(All Players(
+			All Teams), Compare(Player Variable(Current Array Element, B), ==, 2))), Null), Null, Null, Top, 21, Red, White, White,
+			Visible To and String);
+		Set Global Variable At Index(F, 3, Last Text ID);
+		Create HUD Text(All Players(All Teams), Filtered Array(All Players(All Teams), Compare(Player Variable(Current Array Element, B),
+			==, 0)), Null, Null, Right, 50, Yellow, White, White, Visible To and String);
+		Set Global Variable At Index(F, 4, Last Text ID);
+	}
+}
+
+rule("players - vote innocent")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ultimate) == True;
+		Count Of(Global Variable(F)) >= 4;
+		Is Game In Progress == True;
+		Event Player != Value In Array(Global Variable(F), 0);
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, B, 1);
+		Set Player Variable At Index(Event Player, D, Count Of(Global Variable(G)), 1);
+	}
+}
+
+rule("players - vote guilty")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ability 2) == True;
+		Count Of(Global Variable(F)) >= 4;
+		Is Game In Progress == True;
+		Event Player != Value In Array(Global Variable(F), 0);
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, B, 2);
+		Set Player Variable At Index(Event Player, D, Count Of(Global Variable(G)), 2);
+	}
+}
+
+rule("final verdict by judge - innocent")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Ultimate) == True;
+		Count Of(Global Variable(F)) >= 4;
+	}
+
+	actions
+	{
+		Wait(0.032, Ignore Condition);
+		Modify Global Variable(G, Append To Array, Value In Array(Global Variable(F), 0));
+		Big Message(All Players(All Teams), String("{0}!", String("Innocent", Null, Null, Null), Null, Null));
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 1),
+			Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)))), F, Add, 2);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 1),
+			Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)))), F, Subtract, 2);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 2),
+			Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)))), F, Subtract, 3);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 2),
+			Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)))), F, Add, 3);
+		Wait(0.016, Ignore Condition);
+		Skip If(Compare(Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)), !=, True), 1);
+		Modify Player Variable(Event Player, F, Subtract, 3);
+		Skip If(Compare(Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)), !=, False), 1);
+		Modify Player Variable(Event Player, F, Add, 3);
+		Set Player Variable(Value In Array(Global Variable(F), 0), C, 1);
+		Clear Status(Value In Array(Global Variable(F), 0), Rooted);
+		Destroy HUD Text(Value In Array(Global Variable(F), 1));
+		Destroy HUD Text(Value In Array(Global Variable(F), 2));
+		Destroy HUD Text(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 4));
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(F, Null);
+	}
+}
+
+rule("final verdict by judge - guilty")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Ability 2) == True;
+		Count Of(Global Variable(F)) >= 4;
+	}
+
+	actions
+	{
+		Wait(0.032, Ignore Condition);
+		Modify Global Variable(G, Append To Array, Value In Array(Global Variable(F), 0));
+		Big Message(All Players(All Teams), String("{0}!", String("Guilty", Null, Null, Null), Null, Null));
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 2),
+			Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)))), F, Subtract, 2);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 2),
+			Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)))), F, Add, 2);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 1),
+			Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)))), F, Add, 3);
+		Modify Player Variable(Filtered Array(All Players(All Teams), And(Compare(Player Variable(Current Array Element, B), ==, 1),
+			Array Contains(Global Variable(E), Value In Array(Global Variable(F), 0)))), F, Subtract, 3);
+		Wait(0.032, Ignore Condition);
+		Skip If(Compare(Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)), !=, True), 1);
+		Modify Player Variable(Event Player, F, Subtract, 3);
+		Skip If(Compare(Array Contains(Global Variable(D), Value In Array(Global Variable(F), 0)), !=, False), 1);
+		Modify Player Variable(Event Player, F, Add, 3);
+		Set Player Variable(Value In Array(Global Variable(F), 0), C, 2);
+		Clear Status(Value In Array(Global Variable(F), 0), Rooted);
+		Destroy HUD Text(Value In Array(Global Variable(F), 1));
+		Destroy HUD Text(Value In Array(Global Variable(F), 2));
+		Destroy HUD Text(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 4));
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(F, Null);
+	}
+}
+
+rule("apply innocent verdict to player")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, C) == 1;
+	}
+
+	actions
+	{
+		Create Icon(All Players(All Teams), Event Player, Halo, Visible To and Position, Blue, True);
+		Skip If(Compare(Array Contains(Global Variable(E), Event Player), !=, True), 1);
+		Create In-World Text(All Players(All Teams), String("{0} {1}", String("Innocent", Null, Null, Null), String("({0})", String(
+			"Guilty", Null, Null, Null), Null, Null), Null), Event Player, 1, Do Not Clip, Visible To Position and String);
+		Skip If(Compare(Array Contains(Global Variable(D), Event Player), !=, True), 1);
+		Create In-World Text(All Players(All Teams), String("{0} {1}", String("Innocent", Null, Null, Null), String("({0})", String(
+			"Innocent", Null, Null, Null), Null, Null), Null), Event Player, 1, Do Not Clip, Visible To Position and String);
+		Create HUD Text(Event Player, String("Innocent", Null, Null, Null), Null, Null, Right, -1.000, Purple, White, White,
+			Visible To and String);
+		Play Effect(All Players(All Teams), Good Explosion, Blue, Event Player, 2);
+		Play Effect(All Players(All Teams), Buff Impact Sound, Blue, Event Player, 200);
+		Skip If(Compare(Array Contains(Global Variable(E), Event Player), !=, True), 1);
+		Modify Player Variable(Event Player, F, Add, Count Of(Filtered Array(All Players(All Teams), Compare(Player Variable(
+			Current Array Element, B), ==, 1))));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(All Players(All Teams), B, 0);
+	}
+}
+
+rule("apply guilty verdict to player")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, C) == 2;
+	}
+
+	actions
+	{
+		Create Icon(All Players(All Teams), Event Player, Skull, Visible To and Position, Red, True);
+		Skip If(Compare(Array Contains(Global Variable(E), Event Player), !=, True), 1);
+		Create In-World Text(All Players(All Teams), String("{0} {1}", String("Guilty", Null, Null, Null), String("({0})", String("Guilty",
+			Null, Null, Null), Null, Null), Null), Event Player, 1, Do Not Clip, Visible To Position and String);
+		Skip If(Compare(Array Contains(Global Variable(D), Event Player), !=, True), 1);
+		Create In-World Text(All Players(All Teams), String("{0} {1}", String("Guilty", Null, Null, Null), String("({0})", String(
+			"Innocent", Null, Null, Null), Null, Null), Null), Event Player, 1, Do Not Clip, Visible To Position and String);
+		Create HUD Text(Event Player, String("Guilty", Null, Null, Null), Null, Null, Right, -1.000, Purple, White, White,
+			Visible To and String);
+		Play Effect(All Players(All Teams), Bad Explosion, Red, Event Player, 2);
+		Play Effect(All Players(All Teams), Explosion Sound, Red, Event Player, 200);
+		Skip If(Compare(Array Contains(Global Variable(D), Event Player), !=, True), 1);
+		Modify Player Variable(Event Player, F, Add, Count Of(Filtered Array(All Players(All Teams), Compare(Player Variable(
+			Current Array Element, B), ==, 2))));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(All Players(All Teams), B, 0);
+	}
+}
+
+rule("judge creates final bell")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(C);
+		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Crouch) == True;
+	}
+
+	actions
+	{
+		Wait(5, Abort When False);
+		Set Player Variable(Event Player, W, 0);
+		Chase Player Variable Over Time(Event Player, W, 7, 3, Destination and Duration);
+		Create Effect(All Players(All Teams), Orb, White, Add(Value In Array(Global Variable(A), 0), Vector(0, Player Variable(
+			Event Player, W), 0)), 2, Visible To Position and Radius);
+		Wait(3, Ignore Condition);
+		Destroy All Effects;
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Good Explosion, Green, Event Player, 15);
+		Play Effect(All Players(All Teams), Buff Explosion Sound, White, Event Player, 200);
+		Set Global Variable(H, True);
+	}
+}
+
+rule("give score to all players based on performance")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(H) == True;
+	}
+
+	actions
+	{
+		Set Player Score(Event Player, Player Variable(Event Player, F));
+		Modify Global Variable(J, Append To Array, Player Variable(Event Player, F));
+	}
+}
+
+rule("declare victory for player with highest score")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(H) == True;
+	}
+
+	actions
+	{
+		Wait(0.500, Ignore Condition);
+		Set Global Variable(J, Sorted Array(Global Variable(J), Current Array Element));
+		Wait(0.064, Ignore Condition);
+		Declare Player Victory(Value In Array(Filtered Array(All Players(All Teams), Compare(Player Variable(Current Array Element, F), ==,
+			Value In Array(Global Variable(J), Subtract(Count Of(Global Variable(J)), 1)))), 0));
+	}
+}
