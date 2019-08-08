@@ -1,0 +1,240 @@
+actions
+{
+	Set Global Variable(D, False);
+	Set Status(Event Player, Null, Invincible, 6);
+	Communicate(Event Player, Emote Left);
+	Set Global Variable(I, 0);
+	Modify Global Variable(F, Append To Array, Add(Position Of(Event Player), Vector(0, 20, 0)));
+	Modify Global Variable(F, Append To Array, Vector(X Component Of(Facing Direction Of(Event Player)), -0.900, Z Component Of(
+		Facing Direction Of(Event Player))));
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 13, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, 5, 0)), Multiply(
+		Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Bad Aura Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.016, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, -5.000, 0)), Multiply(
+		Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Chase Player Variable Over Time(Event Player, E, 20, 5.250, Destination and Duration);
+	Wait(5.300, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.016, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+	Set Global Variable(D, True);
+	Set Player Variable At Index(Filtered Array(Players Within Radius(Value In Array(Global Variable(F), 0), 30, Team 2, Off), Compare(
+		Player Variable(Current Array Element, S), !=, True)), P, 3, True);
+	Stop Chasing Player Variable(Event Player, E);
+	Set Player Variable(Event Player, E, 0);
+	Wait(0.250, Ignore Condition);
+	Set Global Variable(U, 0);
+}
+
+actions
+{
+	Set Global Variable(D, False);
+	Set Status(Event Player, Null, Invincible, 6);
+	Communicate(Event Player, Emote Left);
+	Set Global Variable(I, 0);
+	Modify Global Variable(F, Append To Array, Add(Position Of(Event Player), Vector(0, 20, 0)));
+	Modify Global Variable(F, Append To Array, Vector(X Component Of(Facing Direction Of(Event Player)), -0.900, Z Component Of(
+		Facing Direction Of(Event Player))));
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Sphere, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 13, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, 5, 0)), Multiply(
+		Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Bad Aura Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Wait(0.032, Ignore Condition);
+	Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, -5.000, 0)), Multiply(
+		Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+	Modify Global Variable(F, Append To Array, Last Created Entity);
+	Chase Player Variable Over Time(Event Player, E, 20, 5.250, Destination and Duration);
+	Wait(5.300, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+	Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+		Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+	Set Global Variable(D, True);
+	Set Player Variable At Index(Filtered Array(Players Within Radius(Value In Array(Global Variable(F), 0), 30, Team 2, Off), Compare(
+		Player Variable(Current Array Element, S), !=, True)), P, 3, True);
+	Stop Chasing Player Variable(Event Player, E);
+	Set Player Variable(Event Player, E, 0);
+	Wait(0.250, Ignore Condition);
+	Set Global Variable(U, 0);
+}
+actions
+{
+	Loop If(and(Compare(Player Variable(Event Player, F), <, 40), Compare(Value In Array(Global Variable(P), 3), ==, True)));
+}
+rule("second ult - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Hero Being Played(Hero(Winston), Team 1) == True;
+		Global Variable(U) >= 100;
+		Global Variable(D) != True;
+		Is Button Held(Players On Hero(Hero(Winston), Team 1), Ultimate) == True;
+		Not(Is Dead(Players On Hero(Hero(Winston), Team 1))) == True;
+	}
+
+	actions
+	{
+		Set Global Variable(D, True);
+		Set Global Variable(Z, True);
+		Play Effect(All Players(All Teams), Ring Explosion Sound, Red, Position Of(Event Player), 200);
+		Play Effect(All Players(All Teams), Ring Explosion, Red, Position Of(Event Player), 200);
+		Set Ability 1 Enabled(Players On Hero(Hero(Winston), Team 1), False);
+		Set Move Speed(Players On Hero(Hero(Winston), Team 1), 10);
+		Heal(Event Player, Null, Max Health(Event Player));
+		Set Status(Event Player, Null, Hacked, 15);
+		Set Status(Event Player, Null, Unkillable, 5);
+		Set Healing Received(Event Player, 0);
+		Wait(0.250, Ignore Condition);
+		Damage(Event Player, Players On Hero(Hero(Winston), Team 1), Subtract(Max Health(Event Player), 1));
+		Create HUD Text(Event Player, String("Safe", Null, Null, Null), Null, Null, Left, 100, Purple, Blue, White, Visible To and String);
+		Set Player Variable(Event Player, E, Last Text ID);
+		Wait(5, Ignore Condition);
+		Destroy HUD Text(Player Variable(Event Player, E));
+		Create HUD Text(Event Player, String("Sudden Death", Null, Null, Null), Null, Null, Left, 100, Red, White, White,
+			Visible To and String);
+		Set Player Variable(Event Player, E, Last Text ID);
+		Set Ability 1 Enabled(Players On Hero(Hero(Winston), Team 1), True);
+		Set Move Speed(Players On Hero(Hero(Winston), Team 1), 100);
+		Wait(10, Ignore Condition);
+		Set Healing Received(Event Player, 100);
+		Destroy HUD Text(Player Variable(Event Player, E));
+		Set Player Variable(Event Player, E, Null);
+		disabled Destroy HUD Text(Player Variable(Global Variable(W), I));
+		Set Global Variable(U, 0);
+		disabled Modify Global Variable(C, Remove From Array By Index, Subtract(Count Of(Global Variable(C)), 1));
+		Wait(0.016, Ignore Condition);
+		Skip If(Compare(Hero Of(Global Variable(W)), !=, Hero(Winston)), 4);
+		disabled Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Ultimate Ability", Null, Null, Null), String("{0}%",
+			Global Variable(U), Null, Null), Null), Null, Null, Top, 10, Red, White, White, Visible To and String);
+		disabled Modify Global Variable(C, Append To Array, Last Text ID);
+		disabled Set Player Variable(Global Variable(W), I, Last Text ID);
+		Set Global Variable(Z, False);
+	}
+}
+actions
+{
+	Set Global Variable At Index(F, 0, Ray Cast Hit Position(Value In Array(Global Variable(F), 0), Add(Value In Array(Global Variable(
+		F), 0), Multiply(Down, Value In Array(Global Variable(F), 1))), Null, Event Player, False));
+}
+
+actions
+{
+	Modify Global Variable(F, Append To Array, Ray Cast Hit position(Value In Array(Global Variable(F), 0), Add(Value In Array(
+		Global Variable(F), 0), Multiply(Down, 150)), Null, Event Player, False));
+}
+
+actions
+{
+	Set Move Speed(Players Within Radius(Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2), Team 2, Off),
+		150);
+}
+actions
+{
+	Set Damage Dealt(Players Within Radius(Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2), Team 2, Off),
+		150);
+	Set Damage Received(Players Within Radius(Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2), Team 2, Off),
+		150);
+}
+conditions
+{
+	Distance Between(Event Player, Value In Array(Global Variable(F), 0)) > 30;
+}
+actions
+{
+	Set Player Variable At Index(Filtered Array(All Players(Team 2), Compare(Distance Between(Current Array Element, Event Player), <=,
+		7)), P, 1, True);
+	Set Player Variable At Index(Filtered Array(All Players(Team 2), And(Compare(Distance Between(Current Array Element, Event Player),
+		<=, 20), Compare(Distance Between(Current Array Element, Event Player), >, 7))), P, 2, True);
+}
+actions
+{
+	Chase Player Variable Over Time(Event Player, D, 12, 3, None);
+}
+actions
+{
+	Skip If(Compare(Count Of(Filtered Array(All Players(Team 2), Compare(Value In Array(Player Variable(Current Array Element, D), 2),
+		==, True))), !=, Count Of(All Players(Team 2))), 3);
+}

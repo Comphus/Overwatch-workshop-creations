@@ -1,0 +1,1069 @@
+rule("init globals")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(A) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(A, True);
+		Set Global Variable(C, Vector(206, 15, 87));
+		Set Global Variable(D, Vector(0, 0, 0));
+		Set Global Variable(E, 0);
+		Set Global Variable(F, Empty Array);
+		Set Global Variable(G, Empty Array);
+		Set Global Variable(H, Empty Array);
+		Set Global Variable(I, Empty Array);
+		Set Global Variable(J, Empty Array);
+		Set Global Variable(L, 103);
+		Set Global Variable(N, False);
+		Set Global Variable(Q, Empty Array);
+		Set Global Variable(R, Null);
+		Set Global Variable(X, Nearest Walkable Position(Vector(0, 0, 0)));
+		Set Global Variable(Y, -1.000);
+		Set Global Variable(Z, -1.000);
+	}
+}
+
+rule("randomly create props")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(L) > 0;
+	}
+
+	actions
+	{
+		Set Global Variable(E, Random Real(0.300, 1.800));
+		Set Global Variable(D, Nearest Walkable Position(Add(Global Variable(C), Multiply(Vector(Random Real(-1.000, 1), Random Real(
+			-0.700, 0.300), Random Real(-1.000, 1)), Random Real(0, 70)))));
+		Modify Global Variable(D, Add, Vector(0, Random Real(0.500, Global Variable(E)), 0));
+		Skip If(Is True For Any(Global Variable(F), Compare(Distance Between(Global Variable(D), Current Array Element), <=, Add(
+			Global Variable(E), Value In Array(Global Variable(G), Index Of Array Value(Global Variable(F), Current Array Element))))),
+			45);
+		Set Global Variable(M, 0);
+		Set Global Variable(N, Random Integer(0, 5));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 0)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, White, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 1)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, Yellow, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 2)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, Green, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 3)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, Purple, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 4)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, Red, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Skip If(Compare(And(Compare(Global Variable(M), ==, 0), Compare(Global Variable(N), ==, 5)), ==, False), 6);
+		Create Effect(All Players(All Teams), Sphere, Blue, Global Variable(D), Global Variable(E), None);
+		Modify Global Variable(H, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, Global Variable(D));
+		Modify Global Variable(G, Append To Array, Global Variable(E));
+		Modify Global Variable(I, Append To Array, Global Variable(M));
+		Modify Global Variable(J, Append To Array, Global Variable(N));
+		Modify Global Variable(L, Subtract, 1);
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+		Create HUD Text(All Players(All Teams), String("{0} {1} {2}", String("Finished", Null, Null, Null), String("Loading", Null, Null,
+			Null), String("Spheres", Null, Null, Null)), Null, Null, Right, 1000, Purple, White, White, Visible To and String);
+		Set Global Variable(W, True);
+	}
+}
+
+rule("init pharahs")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Pharah);
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, P, False);
+		Skip If(Compare(Player Variable(Event Player, Y), ==, True), 1);
+		Set Player Variable(Event Player, Y, Empty Array);
+		Create HUD Text(Event Player, String("Hide", Null, Null, Null), Null, Null, Top, 0, White, White, White, Visible To and String);
+		Set Healing Received(Event Player, 0);
+		Clear Status(Event Player, Asleep);
+	}
+}
+
+rule("init ashe")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, P, False);
+		Set Player Variable(Event Player, I, 25);
+		Set Player Variable(Event Player, S, 1);
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, Y), 0));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, Y), 1));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, Y), 2));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, Y), 3));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, Y), 4));
+		Wait(0.064, Ignore Condition);
+		Set Player Variable(Event Player, Y, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Event Player, String("{0} {1}", String("Find", Null, Null, Null), Hero(Pharah), Null), Null, Null, Top, 0, White,
+			White, White, Visible To and String);
+		Modify Player Variable(Event Player, Y, Append To Array, Last Text ID);
+		Create HUD Text(Event Player, String("{0} {1}", String("Attack", Null, Null, Null), String("{0} = {1}", String("Spheres", Null,
+			Null, Null), String("{0} {1}", String("Reveal", Null, Null, Null), Hero(Pharah), Null), Null), Null), Null, Null, Left, 5,
+			White, White, White, Visible To and String);
+		Modify Player Variable(Event Player, Y, Append To Array, Last Text ID);
+		Create HUD Text(Event Player, String("{0} = {1}", String("Use Ability 1", Null, Null, Null), String("{0} {1} {2}", String("Sphere",
+			Null, Null, Null), String("Finding", Null, Null, Null), Hero(Pharah)), Null), Null, Null, Left, 6, White, White, White,
+			Visible To and String);
+		Modify Player Variable(Event Player, Y, Append To Array, Last Text ID);
+		Create HUD Text(Event Player, String("{0}: {1}", String("Cooldown", Null, Null, Null), Player Variable(Event Player, I), Null),
+			Null, Null, Left, 7, White, White, White, Visible To and String);
+		Modify Player Variable(Event Player, Y, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Event Player, String("{0}: {1}", String("Sleeping", Null, Null, Null), Player Variable(Event Player, I), Null),
+			Null, Null, Top, 20, White, White, White, Visible To and String);
+		Set Player Variable(Event Player, W, Last Text ID);
+		Chase Player Variable Over Time(Event Player, I, 0, 25, Destination and Duration);
+		disabled Set Status(Event Player, Null, Asleep, 25);
+		Teleport(Event Player, Nearest Walkable Position(Global Variable(C)));
+		disabled Set Healing Received(Event Player, 0);
+		Wait(25, Ignore Condition);
+		Destroy HUD Text(Player Variable(Event Player, W));
+	}
+}
+
+rule("dynamically check 1 > players <=4 with < 1 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 1;
+		Count Of(All Players(All Teams)) <= 4;
+		Count Of(Global Variable(Q)) < 1;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Append To Array, Random Value In Array(Players On Hero(Hero(Pharah), All Teams)));
+		Start Forcing Player To Be Hero(Filtered Array(Global Variable(Q), Compare(Hero Of(Current Array Element), !=, Hero(Ashe))), Hero(
+			Ashe));
+		disabled Modify Global Variable(Q, Append To Array, Random Value In Array(Players On Hero(Hero(Pharah), All Teams)));
+	}
+}
+
+rule("dynamically check 1 > players <=4 with > 1 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 1;
+		Count Of(All Players(All Teams)) <= 4;
+		Count Of(Global Variable(Q)) > 1;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Remove From Array By Value, Random Value In Array(Global Variable(Q)));
+		Start Forcing Player To Be Hero(Players On Hero(Hero(Ashe), Filtered Array(All Players(All Teams), Compare(Array Contains(
+			Global Variable(Q), Current Array Element), !=, True))), Hero(Pharah));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Global Variable(Q), >, 1), And(Compare(Count Of(All Players(All Teams)), <=, 4), Compare(Count Of(All Players(
+			All Teams)), >, 1))));
+		disabled Set Global Variable(R, Random Value In Array(Global Variable(Q)));
+		disabled Modify Global Variable(Q, Remove From Array By Value, Global Variable(R));
+		disabled Start Forcing Player To Be Hero(Global Variable(R), Hero(Pharah));
+	}
+}
+
+rule("dynamically check 4 > players <=8 with < 2 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 4;
+		Count Of(All Players(All Teams)) <= 8;
+		Count Of(Global Variable(Q)) < 2;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Append To Array, Random Value In Array(Players On Hero(Hero(Pharah), All Teams)));
+		Start Forcing Player To Be Hero(Filtered Array(Global Variable(Q), Compare(Hero Of(Current Array Element), !=, Hero(Ashe))), Hero(
+			Ashe));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Global Variable(Q), <, 2), And(Compare(Count Of(All Players(All Teams)), <=, 8), Compare(Count Of(All Players(
+			All Teams)), >, 4))));
+	}
+}
+
+rule("dynamically check 4 > players <=8 with > 2 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 4;
+		Count Of(All Players(All Teams)) <= 8;
+		Count Of(Global Variable(Q)) > 2;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Remove From Array By Value, Random Value In Array(Global Variable(Q)));
+		Start Forcing Player To Be Hero(Players On Hero(Hero(Ashe), Filtered Array(All Players(All Teams), Compare(Array Contains(
+			Global Variable(Q), Current Array Element), !=, True))), Hero(Pharah));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Global Variable(Q), >, 2), And(Compare(Count Of(All Players(All Teams)), <=, 8), Compare(Count Of(All Players(
+			All Teams)), >, 4))));
+		disabled Set Global Variable(R, Random Value In Array(Global Variable(Q)));
+	}
+}
+
+rule("dynamically check 8 > players <=12 with < 3 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 8;
+		Count Of(All Players(All Teams)) <= 12;
+		Count Of(Global Variable(Q)) < 3;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Append To Array, Random Value In Array(Players On Hero(Hero(Pharah), All Teams)));
+		Start Forcing Player To Be Hero(Filtered Array(Global Variable(Q), Compare(Hero Of(Current Array Element), !=, Hero(Ashe))), Hero(
+			Ashe));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Global Variable(Q), <, 3), And(Compare(Count Of(All Players(All Teams)), <=, 12), Compare(Count Of(All Players(
+			All Teams)), >, 8))));
+		disabled Modify Global Variable(Q, Append To Array, Random Value In Array(All Players(All Teams)));
+		disabled Start Forcing Player To Be Hero(Filtered Array(Global Variable(Q), Compare(Hero Of(Current Array Element), !=, Hero(Ashe))), Hero(
+			Ashe));
+		disabled Wait(0.016, Ignore Condition);
+		disabled Loop If(And(Compare(Global Variable(Q), <, 2), And(Compare(Count Of(All Players(All Teams)), <=, 8), Compare(Count Of(All Players(
+			All Teams)), >, 4))));
+	}
+}
+
+rule("dynamically check 8 > players <=12 with > 3 ashe")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 8;
+		Count Of(All Players(All Teams)) <= 12;
+		Count Of(Global Variable(Q)) > 3;
+	}
+
+	actions
+	{
+		Modify Global Variable(Q, Remove From Array By Value, Random Value In Array(Global Variable(Q)));
+		Start Forcing Player To Be Hero(Players On Hero(Hero(Ashe), Filtered Array(All Players(All Teams), Compare(Array Contains(
+			Global Variable(Q), Current Array Element), !=, True))), Hero(Pharah));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Global Variable(Q), >, 3), And(Compare(Count Of(All Players(All Teams)), <=, 12), Compare(Count Of(All Players(
+			All Teams)), >, 8))));
+		disabled Set Global Variable(R, Random Value In Array(Global Variable(Q)));
+		disabled Modify Global Variable(Q, Remove From Array By Value, Global Variable(R));
+		disabled Start Forcing Player To Be Hero(Global Variable(R), Hero(Pharah));
+		disabled Wait(0.016, Ignore Condition);
+		disabled Loop If(And(Compare(Global Variable(Q), >, 1), And(Compare(Count Of(All Players(All Teams)), <=, 4), Compare(Count Of(All Players(
+			All Teams)), >, 1))));
+	}
+}
+
+rule("ashe fire reveal - success")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Is Firing Primary(Event Player) == True;
+		disabled Is True For Any(Players On Hero(Hero(Pharah), All Teams), Compare(Distance Between(Ray Cast Hit Position(Eye Position(
+			Event Player), Add(Eye Position(Event Player), Multiply(Facing Direction Of(Event Player), Player Variable(Event Player, S))),
+			All Players(All Teams), Event Player, True), Add(Position Of(Current Array Element), Vector(0, Player Variable(
+			Current Array Element, C), 0))), <=, Add(Value In Array(Global Variable(G), Player Variable(Current Array Element, A)), 1)))
+			== True;
+		Is True For Any(Players On Hero(Hero(Pharah), All Teams), And(And(Compare(Distance Between(Vector(0, 0, 0), Subtract(Add(
+			Position Of(Current Array Element), Vector(0, Player Variable(Event Player, C), 0)), Add(Eye Position(Event Player), Multiply(
+			Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(Current Array Element,
+			C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(Event Player))))), <=,
+			Value In Array(Global Variable(G), Player Variable(Current Array Element, A))), Compare(Is In Line of Sight(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player), Enemy Barriers Block LOS), ==, True)), Compare(Distance Between(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Current Array Element, Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player)), <=, 999))) == True;
+		disabled Is True For Any(Global Variable(F), And(And(Compare(Distance Between(Vector(0, 0, 0), Subtract(Current Array Element, Add(
+			Eye Position(Event Player), Multiply(Absolute Value(Dot Product(Subtract(Current Array Element, Eye Position(Event Player)),
+			Facing Direction Of(Event Player))), Facing Direction Of(Event Player))))), <=, Value In Array(Global Variable(G),
+			Index Of Array Value(Global Variable(F), Current Array Element))), Compare(Is In Line of Sight(Add(Eye Position(Event Player),
+			Multiply(Absolute Value(Dot Product(Subtract(Current Array Element, Eye Position(Event Player)), Facing Direction Of(
+			Event Player))), Facing Direction Of(Event Player))), Eye Position(Event Player), Enemy Barriers Block LOS), ==, True)),
+			Compare(Distance Between(Add(Eye Position(Event Player), Multiply(Absolute Value(Dot Product(Subtract(Current Array Element,
+			Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(Event Player))), Eye Position(
+			Event Player)), <=, 999))) == True;
+	}
+
+	actions
+	{
+		Set Status(Filtered Array(Players On Hero(Hero(Pharah), All Teams), And(And(Compare(Distance Between(Vector(0, 0, 0), Subtract(Add(
+			Position Of(Current Array Element), Vector(0, Player Variable(Event Player, C), 0)), Add(Eye Position(Event Player), Multiply(
+			Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(Current Array Element,
+			C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(Event Player))))), <=,
+			Value In Array(Global Variable(G), Player Variable(Current Array Element, A))), Compare(Is In Line of Sight(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player), Enemy Barriers Block LOS), ==, True)), Compare(Distance Between(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Current Array Element, Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player)), <=, 999))), Event Player, Burning, 4);
+		Heal(Event Player, Event Player, 4);
+	}
+}
+
+rule("ashe fire reveal - fail")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Is Firing Primary(Event Player) == True;
+		Is True For All(Players On Hero(Hero(Pharah), All Teams), And(And(Compare(Distance Between(Vector(0, 0, 0), Subtract(Add(
+			Position Of(Current Array Element), Vector(0, Player Variable(Event Player, C), 0)), Add(Eye Position(Event Player), Multiply(
+			Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(Current Array Element,
+			C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(Event Player))))), <=,
+			Value In Array(Global Variable(G), Player Variable(Current Array Element, A))), Compare(Is In Line of Sight(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Position Of(Current Array Element), Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player), Enemy Barriers Block LOS), ==, True)), Compare(Distance Between(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Add(Current Array Element, Vector(0, Player Variable(
+			Current Array Element, C), 0)), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player)), <=, 999))) == False;
+		disabled Compare(Is True For All(Global Variable(A), Compare(0, ==, 0)), ==, False) == True;
+		disabled Is True For All(Players On Hero(Hero(Pharah), All Teams), Compare(Distance Between(Ray Cast Hit Position(Eye Position(
+			Event Player), Add(Eye Position(Event Player), Multiply(Facing Direction Of(Event Player), Player Variable(Event Player, S))),
+			All Players(All Teams), Event Player, True), Add(Position Of(Current Array Element), Vector(0, Player Variable(
+			Current Array Element, C), 0))), <=, Add(Value In Array(Global Variable(G), Player Variable(Current Array Element, A)), 1)))
+			!= True;
+	}
+
+	actions
+	{
+		Damage(Event Player, Null, 4);
+	}
+}
+
+rule("ashe interact key effect - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Is Button Held(Event Player, Interact) == True;
+		Player Variable(Event Player, I) == 0;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, I, 25);
+		Skip If(Compare(Player Variable(Event Player, S), >, 1), 2);
+		Set Player Variable(Event Player, E, Eye Position(Event Player));
+		Set Player Variable(Event Player, F, Facing Direction Of(Event Player));
+		Set Player Variable(Event Player, G, Ray Cast Hit Position(Player Variable(Event Player, E), Add(Player Variable(Event Player, E),
+			Multiply(Player Variable(Event Player, F), Player Variable(Event Player, S))), All Players(All Teams), Event Player, True));
+		Play Effect(All Players(All Teams), Bad Explosion, White, Player Variable(Event Player, G), 0.250);
+		Wait(0.064, Ignore Condition);
+		Modify Player Variable(Event Player, S, Add, 0.100);
+		Loop If(Compare(Player Variable(Event Player, S), <=, 7.500));
+		Wait(0.250, Ignore Condition);
+		Skip If(Is True For Any(Players On Hero(Hero(Pharah), All Teams), Compare(Distance Between(Add(Position Of(Event Player), Vector(0,
+			Player Variable(Current Array Element, C), 0)), Player Variable(Event Player, G)), <=, 6)), 1);
+		Play Effect(All Players(All Teams), Bad Explosion, Red, Player Variable(Event Player, G), 6);
+		Skip If(Is True For All(Players On Hero(Hero(Pharah), All Teams), Compare(Distance Between(Add(Position Of(Event Player), Vector(0,
+			Player Variable(Current Array Element, C), 0)), Player Variable(Event Player, G)), >, 6)), 1);
+		Play Effect(All Players(All Teams), Bad Explosion, Green, Player Variable(Event Player, G), 6);
+		Chase Player Variable Over Time(Event Player, I, 0, 25, Destination and Duration);
+		Set Player Variable(Event Player, S, 1);
+	}
+}
+
+rule("f to become prop - pharah")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is True For Any(Global Variable(F), Or(Compare(Distance Between(Position Of(Event Player), Current Array Element), <=, Multiply(
+			Value In Array(Global Variable(G), Index Of Array Value(Global Variable(F), Current Array Element)), 1)), Compare(
+			Distance Between(Position Of(Event Player), Ray Cast Hit Position(Current Array Element, Add(Current Array Element, Multiply(
+			Down, 4)), All Players(All Teams), Event Player, True)), <=, Multiply(Value In Array(Global Variable(G), Index Of Array Value(
+			Global Variable(F), Current Array Element)), 1)))) == True;
+		disabled Is True For Any(Global Variable(F), Or(Compare(Distance Between(Position Of(Event Player), Current Array Element), <=, Multiply(
+			Value In Array(Global Variable(G), Index Of Array Value(Global Variable(F), Current Array Element)), 1)), Compare(0, ==, 0)))
+			== True;
+		disabled Is True For Any(Global Variable(F), Or(Compare(0, ==, 0), Compare(0, ==, 0))) == True;
+		Is Button Held(Event Player, Interact) == True;
+		Hero Of(Event Player) != Hero(Ashe);
+		Global Variable(W) == True;
+		Player Variable(Event Player, U) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, U, True);
+		Set Player Variable(Event Player, A, Filtered Array(Global Variable(F), Or(Compare(Distance Between(Position Of(Event Player),
+			Current Array Element), <=, Multiply(Value In Array(Global Variable(G), Index Of Array Value(Global Variable(F),
+			Current Array Element)), 1)), Compare(Distance Between(Position Of(Event Player), Ray Cast Hit Position(Current Array Element,
+			Add(Current Array Element, Multiply(Down, 4)), All Players(All Teams), Event Player, True)), <=, Multiply(Value In Array(
+			Global Variable(G), Index Of Array Value(Global Variable(F), Current Array Element)), 1)))));
+		disabled Set Player Variable(Event Player, A, Filtered Array(Global Variable(F), Compare(Distance Between(Position Of(Event Player),
+			Current Array Element), <=, Multiply(Value In Array(Global Variable(G), Index Of Array Value(Global Variable(F),
+			Current Array Element)), 1))));
+		Set Player Variable(Event Player, A, Index Of Array Value(Global Variable(F), Player Variable(Event Player, A)));
+		Skip If(Compare(Player Variable(Event Player, A), ==, -1.000), 14);
+		Destroy Effect(Player Variable(Event Player, B));
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 0)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, White, Position Of(Event Player), Value In Array(Global Variable(G), Player Variable(
+			Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 1)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Yellow, Position Of(Event Player), Value In Array(Global Variable(G),
+			Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 2)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Green, Position Of(Event Player), Value In Array(Global Variable(G), Player Variable(
+			Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 3)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Purple, Position Of(Event Player), Value In Array(Global Variable(G),
+			Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 4)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Red, Position Of(Event Player), Value In Array(Global Variable(G), Player Variable(
+			Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 5)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Blue, Position Of(Event Player), Value In Array(Global Variable(G), Player Variable(
+			Event Player, A)), Visible To Position and Radius);
+		Set Player Variable(Event Player, B, Last Created Entity);
+		disabled Skip If(Compare(Player Variable(Event Player, A), !=, -1.000), 6);
+		Set Player Variable(Event Player, C, 0);
+		Set Player Variable(Event Player, D, True);
+		disabled Set Invisible(Event Player, None);
+		disabled Stop Camera(Event Player);
+		Wait(0.016, Ignore Condition);
+		Press Button(Event Player, Ability 2);
+		disabled Set Player Variable(Event Player, H, Subtract(100, Player Variable(Event Player, H)));
+		disabled Wait(0.016, Ignore Condition);
+		disabled Set Max Health(Event Player, Multiply(Divide(Multiply(2, Multiply(200, Value In Array(Global Variable(G), Player Variable(
+			Event Player, A)))), 200), 100));
+		disabled Wait(0.080, Ignore Condition);
+		disabled Heal(Event Player, Null, 1000);
+		disabled Wait(0.080, Ignore Condition);
+		disabled Start Damage Over Time(Event Player, Null, 0.200, Multiply(Max Health(Event Player), Multiply(5, Player Variable(Event Player,
+			H))));
+		disabled Wait(0.016, Ignore Condition);
+		disabled Create HUD Text(All Players(All Teams), Player Variable(Event Player, H), Null, Null, Left, 0, White, White, White,
+			Visible To and String);
+		Wait(0.600, Ignore Condition);
+		Set Player Variable(Event Player, U, False);
+	}
+}
+
+rule("start 3rd person camera as prop and invis")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, D) == True;
+		Player Variable(Event Player, Z) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, Z, True);
+		Start Camera(Event Player, Add(Add(Add(Event Player, World Vector Of(Vector(0, 1.800, -1.500), Event Player, Rotation)), Multiply(
+			Up, 1.500)), Multiply(Facing Direction Of(Event Player), -2.000)), Add(Event Player, Add(World Vector Of(Vector(0, -35.000, 0),
+			Event Player, Rotation), Multiply(Facing Direction Of(Event Player), 1000))), 150);
+		Wait(0.016, Ignore Condition);
+		Set Invisible(Event Player, All);
+		Wait(0.064, Ignore Condition);
+		Skip If(Compare(Player Variable(Event Player, A), !=, -1.000), 2);
+		Set Invisible(Event Player, None);
+		disabled Stop Camera(Event Player);
+		Wait(0.064, Ignore Condition);
+		Start Camera(Event Player, Add(Add(Add(Event Player, World Vector Of(Vector(0, 1.800, -1.500), Event Player, Rotation)), Multiply(
+			Up, 1.500)), Multiply(Facing Direction Of(Event Player), -2.000)), Add(Event Player, Add(World Vector Of(Vector(0, -35.000, 0),
+			Event Player, Rotation), Multiply(Facing Direction Of(Event Player), 1000))), 150);
+	}
+}
+
+rule("q to bring current prop down - pharah")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ultimate) == True;
+		Multiply(0, 0) <= Player Variable(Event Player, C);
+		Player Variable(Event Player, D) == True;
+		Hero Of(Event Player) != Hero(Ashe);
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, C, Add, -0.020);
+		Destroy Effect(Player Variable(Event Player, B));
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 0)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, White, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 1)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Yellow, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 2)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Green, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 3)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Purple, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 4)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Red, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C), 0)),
+			Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 5)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Blue, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C), 0)),
+			Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Set Player Variable(Event Player, B, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("e to bring current prop up - pharah")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ability 2) == True;
+		Multiply(Subtract(Value In Array(Global Variable(G), Player Variable(Event Player, A)), -1.400), 1) >= Player Variable(
+			Event Player, C);
+		Player Variable(Event Player, D) == True;
+		Hero Of(Event Player) != Hero(Ashe);
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, C, Add, 0.020);
+		Destroy Effect(Player Variable(Event Player, B));
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 0)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, White, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 1)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Yellow, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 2)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Green, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 3)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Purple, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C),
+			0)), Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 4)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Red, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C), 0)),
+			Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Skip If(Compare(And(Compare(Value In Array(Global Variable(I), Player Variable(Event Player, A)), ==, 0), Compare(Value In Array(
+			Global Variable(J), Player Variable(Event Player, A)), ==, 5)), ==, False), 1);
+		Create Effect(All Players(All Teams), Sphere, Blue, Add(Position Of(Event Player), Vector(0, Player Variable(Event Player, C), 0)),
+			Value In Array(Global Variable(G), Player Variable(Event Player, A)), Visible To Position and Radius);
+		Set Player Variable(Event Player, B, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("revealed prop")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Pharah);
+		Has Status(Event Player, Burning) == True;
+	}
+
+	actions
+	{
+		Set Invisible(Event Player, None);
+		Clear Status(Event Player, Phased Out);
+		Set Move Speed(Event Player, 125);
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+		Set Move Speed(Event Player, 100);
+		Skip If(Compare(Player Variable(Event Player, D), !=, True), 2);
+		Set Status(Event Player, Null, Phased Out, 9999);
+		Set Invisible(Event Player, All);
+	}
+}
+
+rule("remove prop on death")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Pharah);
+	}
+
+	actions
+	{
+		Destroy Effect(Player Variable(Event Player, B));
+		Set Invisible(Event Player, None);
+		Stop Camera(Event Player);
+		Set Player Variable(Event Player, Z, False);
+		Set Player Variable(Event Player, D, False);
+	}
+}
+
+rule("ctrl + q change camera on")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		Is Button Held(Event Player, Ultimate) == True;
+		Player Variable(Event Player, P) != True;
+	}
+
+	actions
+	{
+		Start Camera(Event Player, Add(Add(Add(Event Player, World Vector Of(Vector(0, 1.800, -1.500), Event Player, Rotation)), Multiply(
+			Up, 1.500)), Multiply(Facing Direction Of(Event Player), -1.900)), Add(Event Player, Add(World Vector Of(Vector(0, -35.000, 0),
+			Event Player, Rotation), Multiply(Facing Direction Of(Event Player), 1000))), 150);
+		Wait(0.500, Ignore Condition);
+		Set Player Variable(Event Player, P, True);
+	}
+}
+
+rule("ctrl + q change camera off")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		Is Button Held(Event Player, Ultimate) == True;
+		Player Variable(Event Player, P) == True;
+	}
+
+	actions
+	{
+		Stop Camera(Event Player);
+		Wait(0.500, Ignore Condition);
+		Set Player Variable(Event Player, P, False);
+	}
+}
+
+rule("victory pharah")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Match Time <= 1;
+	}
+
+	actions
+	{
+		Declare Player Victory(Players On Hero(Hero(Pharah), All Teams));
+	}
+}
+
+disabled rule("fix spawn glitch?")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Pharah);
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Wait(5, Ignore Condition);
+		Set Player Variable(Event Player, X, True);
+	}
+}
+
+disabled rule("seeker limit")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Number of Heroes(Hero(Ashe), All Teams) > 3;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Start Forcing Player To Be Hero(Event Player, Hero(Pharah));
+	}
+}
+
+disabled rule("check if randomly assigned ashe - true")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Player Variable(Event Player, R) == True;
+	}
+
+	actions
+	{
+		Start Forcing Player To Be Hero(Event Player, Hero(Ashe));
+	}
+}
+
+disabled rule("game start > 6 players")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+		Count Of(All Players(All Teams)) > 6;
+		Global Variable(Q) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(Q, True);
+		Set Player Variable(Array Slice(Randomized Array(All Players(All Teams)), 0, 2), R, True);
+		Set Player Variable(All Players(All Teams), Y, True);
+	}
+}
+
+disabled rule("victory ashe")
+{
+	event
+	{
+		Player Died;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is True For All(Players On Hero(Hero(Pharah), All Teams), Is Dead(Current Array Element)) == True;
+	}
+
+	actions
+	{
+		Declare Player Victory(Players On Hero(Hero(Ashe), All Teams));
+	}
+}
+
+disabled rule("ashe interact increase range")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Is Button Held(Event Player, Ability 2) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Compare(Player Variable(Event Player, S), <=, 20), !=, True), 1);
+		Modify Player Variable(Event Player, S, Add, 0.500);
+		Play Effect(All Players(All Teams), Bad Explosion, Blue, Ray Cast Hit Position(Eye Position(Event Player), Add(Eye Position(
+			Event Player), Multiply(Facing Direction Of(Event Player), Player Variable(Event Player, S))), All Players(All Teams),
+			Event Player, True), 0.300);
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+disabled rule("ashe interact decrease range")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) == Hero(Ashe);
+		Is Button Held(Event Player, Ultimate) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Compare(Player Variable(Event Player, S), >=, 2), !=, True), 1);
+		Modify Player Variable(Event Player, S, Subtract, 0.500);
+		Play Effect(All Players(All Teams), Bad Explosion, Red, Ray Cast Hit Position(Eye Position(Event Player), Add(Eye Position(
+			Event Player), Multiply(Facing Direction Of(Event Player), Player Variable(Event Player, S))), All Players(All Teams),
+			Event Player, True), 0.300);
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+disabled rule("ensure respawn timer")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Game In Progress == True;
+	}
+
+	actions
+	{
+		Disable Built-In Game Mode Respawning(Event Player);
+		Wait(0.250, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+disabled rule("Main")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, 999);
+		Set Player Variable(Event Player, R, 1);
+		Create HUD Text(All Players(All Teams), And(And(Compare(Distance Between(Vector(0, 0, 0), Subtract(Player Variable(Event Player,
+			C), Add(Eye Position(Event Player), Multiply(Absolute Value(Dot Product(Subtract(Player Variable(Event Player, C),
+			Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(Event Player))))), <=, Player Variable(
+			Event Player, R)), Compare(Is In Line of Sight(Add(Eye Position(Event Player), Multiply(Absolute Value(Dot Product(Subtract(
+			Player Variable(Event Player, C), Eye Position(Event Player)), Facing Direction Of(Event Player))), Facing Direction Of(
+			Event Player))), Eye Position(Event Player), Enemy Barriers Block LOS), ==, True)), Compare(Distance Between(Add(Eye Position(
+			Event Player), Multiply(Absolute Value(Dot Product(Subtract(Player Variable(Event Player, C), Eye Position(Event Player)),
+			Facing Direction Of(Event Player))), Facing Direction Of(Event Player))), Eye Position(Event Player)), <=, Player Variable(
+			Event Player, A))), Null, Null, Top, 999, White, White, White, Visible To and String);
+		Create Effect(All Players(All Teams), Sphere, Blue, Player Variable(Event Player, C), Divide(Player Variable(Event Player, R),
+			0.985), Visible To Position and Radius);
+	}
+}
+
+disabled rule("Update C")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ability 1) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, C, Position Of(Event Player));
+	}
+}

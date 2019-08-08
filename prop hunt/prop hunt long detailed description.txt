@@ -1,0 +1,34 @@
+prop hunt for overwatch. currently only works for chateau, but can be expanded for multiple maps once i have a map detector coded in.
+there are very little bugs with the actual code, HOWEVER this game mode doesnt seem to be great for the current version of workshop.
+due to the nature of effects in the workshop, games will crash constantly when there are too many effects and too many players
+
+**If your camera bugs and is in the middle of nowhere, hold crouch + ability 2 (ctrl+e by default) to fix it**
+Note: there is a mccree and ashe version of this mode.
+
+Mccree is the hunter. shoot the sphere that you think is a pharah hiding as a prop to try to reveal them
+if it isnt a pharah, you take damage, if it is, you dont take damage and reveal the pharah
+if Mccree locates a prop pharah, the prop is revealed for 4 seconds.
+Mcree can also press Q to use a special ability. It is a trail of light that slowly moves forward then explodes a certain color
+if it explodes red, that mean there was no hiding pharah found. if it explodes green, that means that there is a pharah within a 7 meter radius of where it exploded. A pharah will also play a voice line when this happens.
+as Mcree, press E(ability 2) to perform a super jump. this is so you can kill the pharahs hiding on top of high ground that you normally cant reach. 5 second cd.
+
+Pharah is the prop. press f(interact key) near a prop(sometimes you may have to jump) to become that selected prop.
+press Q and E to decrease and increase your prop height respectively.
+
+pharah deals 15 melee damage
+
+Mcree wins they get all collectively get 9 kills
+pharah wins when they collectively get 3 kills OR the timer runs out
+
+will update later to be an elimination like game mode since disable built in game mode respawning works now.
+
+credit to Corrade for making the hit detection code to detect hits on effects relative to crosshair.
+
+if you use this code and the game crashes, you will need to change the amount of spheres that get generated on the field.
+to do this, go to the rule that is the name of whatever map it crashed on and change the 0th index of global variable L to a lower number
+0th index = number of props
+1st index = propagation range from center
+2nd index = minimum radius of spheres
+3rd index = maximum radius of spheres
+
+![](https://i.imgur.com/XLE2Gvp.jpghttps://)

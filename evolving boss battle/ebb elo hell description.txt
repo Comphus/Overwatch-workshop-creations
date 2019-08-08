@@ -1,0 +1,65 @@
+**Evolving Boss Battle**
+4 main phases, goes from rein>orisa>roadhog>winston with a hidden genji phase if boss has 25 or less points. for every point above 25% chance of genji reduces by 4%.
+phases change at 75% hp, 50% hp , 25% hp and 5k hp for genji.
+
+attackers need to kill boss once to win(negative score doesnt matter)
+boss needs to get a score of 50 to win
+
+**All - Attackers:**
+      Currently called "survive"(cause custom strings dont exist): this is a trinket, similar to wow but way more powerful.
+    After activation, you will get an instant heal. Then, for 3s you will be immune to all damage/ccs, deal 2x more damage, move 2x faster and heal for 5x more. After the 3s are up it goes on cd for 20 sec
+    this will not work during some skills such as genji ground pound when hese on the floor, winston 2nd ult and roadhog 2nd ult(debuff time is reduced by half if trinket is used)
+    AS THE ATTACKER, TRINKET IS THE MOST IMPORTANT SKILL TO USE. MAKE SURE TO LEARN TO HOW TO USE IT.
+    Examples of skills to use trinket on: Reinhardt shatter/shatter burn, orisa's halt capture, when you have multiple unstable debuffs from roadhog/roadhog's 2nd ult(or just run more than 35m from the center of the nuke), winston roar if you get caught/winston bubble debuff, Genji's deflect teleport.
+    There are more cases in which trinket can be used, as trinket does give you a 2x damage boost you can use it offensively. Depending on the person playing the boss you may use it according to their playstyle.
+
+**All - Bosses:**
+    Enrage, also known as **DANGER** - anti cc spam mechanic, when boss gets frozen/hacked/stunned/slept, boss becomes enraged for 10 seconds, cd 10 seconds. during enrage, boss has 3x damage 2x move speed, 3x healing and is immune to all damage/cc effects.
+    
+   **DO NOT SPAM CCs MINDLESSLY. YOU WILL HAVE TO USE CCs AT THE RIGHT MOMENTS.**
+
+**Phase 1 - Reinhardt:**
+-           Firestrike - Gives Reinhardt a buff that makes any damage that he does deal an additional burn DoT for 5.5 seconds
+-           charge - leaves a trail of flame where rein charged, anyone standing in it will take stacking burn damage and will get a 30% movement speed reduction.
+-          shield - replaced right click shield with a hold right click damage reflect. anytime rein takes damage, the attacker takes 3% of max hp damage per hit. if rein activates shield and an attacker is in it, they take fire dot damage
+-              shatter - additionally hacks/freezes, and applies a 100 second burn that ticks for 1% of max hp every second.
+
+  main playstyle: you should aim for is to stack burns, the second you see someone in your fire charge trail, stun them and throw a fire strike, this is practically a guaranteed kill 99% of the time. against high hits per second heroes like bastion/tracer, use your shield to let them die off you. Additionally, abuse the fire strike buff with shatter 100 second burn to give the enemy an additional burn every time you use your firestrike.
+
+**Phase 2 - Orisa:** -- orisa will most likely be altered a bit to make her play style more engaging
+-      ult - blizzard bugged her ult, now for some reason it lasts forever with this mode. you need to kill this asap, when orisa has her supercharger out, she only takes 15% damage regardless of where she placed it.
+-      shield - disabled, may change it to a temp move speed buff for her eventually
+-      halt - leave a trail of green essence in the path of halt, anyone standing in this essence becomes trapped in space. They are stuck in place, cannot move their camera, and cannot get healed. Once the trail disappears, anyone who was standing in it receives a debuff that stacks. the more stacks you have of this debuff, the more damage you take when you are hit by orisas fortify shield
+-      fortify - creates a bubble around orisa that will force any player that touches the bubble out fiercely, applies a small stun and deals 7% of player damage multiplied by (number of current stacks + 1)
+
+  main playstyle: root players with halt and click their head if youre far away from them, perfect opportunity to 100% headshot someone. If you are close to them, walk up to them and use fortify. 
+
+**Phase 3 - Roadhog:**
+-      stand near him/his gas around him within a 3m radius - applies the first stack of the unstable debuff, heals player for 20% hp every second and increases damage taken by 1.5x. Hook and whole hog debuff cannot be applied until this debuff gets applied.
+-      hook - person caught by the hook sleeps his allies around him in a 4 meter range for 2.5 second. Applies the 2nd unstable debuff to the person that was hooked and all others around the hook target in a 2.5m radius
+-      whole hog - when casting, become immune to damage(not cc). every single hit landed on a player applies an instant 145 HP heal. This applies the 3rd stack of unstable to players hit by whole hog. Additionally, whole hog sucks in instead of pushing out.
+-      take a breather - Roadhog's main damage ability, when used, consumes all unstable debuff stacks of all players. Players with the debuff will take 30% max hp damage * number of stacks, take additional damage equal to 50%+50%*number of stacks for 5 seconds, stun themselves for 1s+0.5s*number of stacks, and heal roadhog for 500+500*number of stacks.
+-      2nd ult: The Apocalypse - At 100% ult charge, press interact key(by default bound to F) to summon a large poison nuke that will slowly descend until hitting the ground and exploding. All players caught within the explosions 35m radius will get the 4th unstable stack as well as an additional debuff for 60 seconds(30s if trinketed before explosion). The additional debuff will reduce damage done by 50%, move speed by 40%, healing by 50%, and lower projectile speed to 10%. If all attackers have all 4 unstable stacks, roadhog will automatically win the game when they press take a breather.
+
+  main playstyle - you want to try to stay in phase 3 forever to farm kills and win. get as many people near you as possible to stack unstable debuff, then farm your ults on them(they take 150% more damage and are constantly healed, they are your tool to get your ult). use your ult when you need hp. use take a breather to kill players
+
+**Phase 4 - Enraged Winston:**
+-      leap - Initial hit knocks down enemies near him for 0.8 seconds, and enemies hit by his final slam get knocked down for 1.6 seconds.
+-      2nd ultimate: Primal Explosion(**press regular ultimate button to activate**) - At 100% ult charge, you will slowly create a sphere that grows from 0 -> 12m in radius over time, slowing and hacking any players caught inside of it. This will do 50% max hp damage to the player. Additionally, players cannot use their trinket while you are casting this.
+-      Bubble(press regular bubble key) - Create an "evil" bubble that will drop down and stop when it hits the ground. After 15 seconds this bubble will explode. This will heal winston for 20k health, give Winston a load of temporary buffs and attackers within a certain radius a temporary debuff. However, if half of the attacking team stands inside the bubble for 2 straight seconds then the bubble will explode in the attackers favor, granting them a temporary buff and giving Winston a temporary debuff. 30s cooldown, starts on cast.
+-      Roar(press secondary fire) - After a small amount of time, winston will roar causing all players within an 8m radius of him to take double damage, become rooted and will prevent them from being knocked back when winston damages them. Players within 8-20m will be slowed for 50%. When you have your bubble out, your roar will additionally knock back players.
+
+Your bubble on a successful explosion will give you 20% ult charge, but halve your ult charge if it isnt to your favor. Roar will also give you 5% ult charge per player within the 8m radius and 2% per person within the 8-20m radius.
+
+  main playstyle - Combo your leap/roar/ultimate frequently. use your leap knock down to your advantage to set up your roar/2nd ultimate. If you have your bubble buff on OR if you caught someone with your 8m roar, your ultimate will one shot them.
+
+
+**Phase ??? - Genji:**
+-       Ground Pound(dash up at least 5m in the air, then press crouch) - Genji dashes into the air, then strikes the ground with a tremendous force. Players will be knocked down for a gradually lower time. If an attacker is within 2m of your landing area, they will be permanently knocked down until you either swing OR the attackers attack you a certain number of times. your next swing while in ground pound will one shot. While genji is on the floor, attackers cannot use their trinket.
+-       Smoke Screen Stealth(Use with secondary fire while not in the air) - Genji covers an area with smoke and becomes invisible for 15 seconds. You will leave behind a trail of pulsating rings every 0.8 seconds to show the attackers where you are. Your next attack in stealth will deal 5x more damage. The smoke screen disappears and stealth ends when genji either does an attack, the 15 second timer is up, or when the attackers manage to hit genji a certain amount of times.
+-       Teleport Deflect(Omae wa mou shinderu) - After Genji's deflect ends, he will teleport behind whoever he managed to hit with his deflect in the order he hit them in, 1 shot slashing each player who he teleports to. Genji will keep on teleporting behind a player until they are dead or until they use their trinket 
+    
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------	
+    
+Note: when v2.0.0 comes out, it may still not be 100% balanced.
+Versions 2.0.0-2.4.9 will most likely have minor changes and/or boss revamps(specifically for orisa and rein). v3.0.0 is planned to give all attacking heroes seperate passives/buffs/abilities as well as buffing the boss.
