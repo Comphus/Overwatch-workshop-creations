@@ -1,0 +1,390 @@
+rule("f to teleport")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Interact) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, Facing Direction Of(Event Player));
+		Teleport(Event Player, Add(Position Of(Event Player), Multiply(5, Facing Direction Of(Event Player))));
+		Set Facing(Event Player, Player Variable(Event Player, A), To World);
+		Wait(0.200, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("hud init")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Create HUD Text(Event Player, Position Of(Event Player), Null, Null, Left, 0, White, White, White, Visible To and String);
+	}
+}
+
+rule("init points")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(A) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(A, Empty Array);
+		Modify Global Variable(A, Append To Array, Vector(36, 21, 45));
+		Modify Global Variable(A, Append To Array, Vector(36, 21, 65));
+		Modify Global Variable(A, Append To Array, Vector(-2.000, 21, 45));
+		Modify Global Variable(A, Append To Array, Vector(-2.000, 21, 65));
+		Modify Global Variable(A, Append To Array, Vector(36, 21, 95));
+		Modify Global Variable(A, Append To Array, Vector(36, 21, 115));
+		Modify Global Variable(A, Append To Array, Vector(-2.000, 21, 95));
+		Modify Global Variable(A, Append To Array, Vector(-2.000, 21, 115));
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 0), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 1), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 2), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 3), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 4), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 5), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 6), 1,
+			Visible To Position and Radius);
+		Create Effect(All Players(All Teams), Light Shaft, White, Value In Array(Global Variable(A), 7), 1,
+			Visible To Position and Radius);
+		Wait(3, Ignore Condition);
+		Set Global Variable(B, Empty Array);
+		Modify Global Variable(B, Append To Array, Vector(17, 25, 105));
+		Modify Global Variable(B, Append To Array, 0.700);
+		Create Effect(All Players(All Teams), Sphere, White, Value In Array(Global Variable(B), 0), Value In Array(Global Variable(B), 1),
+			Visible To Position and Radius);
+		Modify Global Variable(B, Append To Array, Last Created Entity);
+		Modify Global Variable(B, Append To Array, 0);
+		Modify Global Variable(B, Append To Array, 0);
+		Modify Global Variable(B, Append To Array, 0);
+		Set Global Variable(C, False);
+		Set Global Variable(D, Empty Array);
+		Modify Global Variable(D, Append To Array, 0);
+		Modify Global Variable(D, Append To Array, 0.025);
+		Modify Global Variable(D, Append To Array, 0);
+	}
+}
+
+rule("init players")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, Empty Array);
+		Modify Player Variable(Event Player, A, Append To Array, False);
+		Modify Player Variable(Event Player, A, Append To Array, False);
+		Modify Player Variable(Event Player, A, Append To Array, 0);
+		Disallow Button(Event Player, Secondary Fire);
+		Set Player Variable(Event Player, B, False);
+	}
+}
+
+rule("teleport to top")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+		Health(Event Player) > 0;
+	}
+
+	actions
+	{
+		Teleport(Event Player, Vector(15, 25, 80));
+		Set Player Variable(Event Player, B, False);
+	}
+}
+
+rule("ball gravity physics - 1st ball")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Count Of(Global Variable(B)) >= 6;
+		Global Variable(C) != True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Y Component Of(Value In Array(Global Variable(B), 0)), >=, 21.300), 1);
+		Modify Global Variable At Index(B, 4, Multiply, -1.000);
+		Modify Global Variable At Index(B, 0, Add, Vector(Value In Array(Global Variable(B), 3), 0, 0));
+		Modify Global Variable At Index(B, 0, Add, Vector(0, Value In Array(Global Variable(B), 4), 0));
+		Modify Global Variable At Index(B, 0, Add, Vector(0, 0, Value In Array(Global Variable(B), 5)));
+		Wait(0.016, Ignore Condition);
+		Modify Global Variable At Index(B, 4, Subtract, Value In Array(Global Variable(D), 1));
+		Skip If(Compare(Absolute Value(Value In Array(Global Variable(B), 4)), <, 0.400), 1);
+		Modify Global Variable At Index(B, 4, Add, Value In Array(Global Variable(D), 1));
+		Loop If Condition Is True;
+	}
+}
+
+rule("left click to grab")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Eye Position(Event Player), Value In Array(Global Variable(B), 0)) <= 1.800;
+		Is Button Held(Event Player, Primary Fire) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Global Variable(C), ==, True), 2);
+		Set Global Variable(C, True);
+		Set Player Variable At Index(Event Player, A, 0, True);
+		Set Global Variable At Index(B, 0, Add(Eye Position(Event Player), Multiply(Facing Direction Of(Event Player), 1.200)));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, B, True);
+		Loop If(And(Compare(Is Dead(Event Player), !=, True), Compare(Value In Array(Player Variable(Event Player, A), 0), ==, True)));
+		Set Player Variable At Index(Event Player, A, 0, False);
+		Set Global Variable(C, False);
+	}
+}
+
+rule("right click charge")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Value In Array(Player Variable(Event Player, A), 0) == True;
+		Is Button Held(Event Player, Secondary Fire) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Value In Array(Player Variable(Event Player, A), 2), >=, 2.500), 1);
+		Modify Player Variable At Index(Event Player, A, 2, Add, 0.050);
+		Wait(0.064, Ignore Condition);
+		Loop If Condition Is True;
+		Set Global Variable At Index(B, 3, X Component Of(Multiply(Facing Direction Of(Event Player), Vector(Value In Array(
+			Player Variable(Event Player, A), 2), 0, 0))));
+		Set Global Variable At Index(B, 4, Y Component Of(Multiply(Facing Direction Of(Event Player), Vector(0, Value In Array(
+			Player Variable(Event Player, A), 2), 0))));
+		Set Global Variable At Index(B, 5, Z Component Of(Multiply(Facing Direction Of(Event Player), Vector(0, 0, Value In Array(
+			Player Variable(Event Player, A), 2)))));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable At Index(Event Player, A, 0, False);
+	}
+}
+
+rule("ball 1 - boundary check x axis")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Or(Compare(X Component Of(Value In Array(Global Variable(B), 0)), <=, -2.000), Compare(X Component Of(Value In Array(
+			Global Variable(B), 0)), >=, 36)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable At Index(B, 3, Multiply, -0.900);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Value In Array(Global Variable(B), 0), 200);
+		Play Effect(All Players(All Teams), Good Explosion, White, Value In Array(Global Variable(B), 0), 2);
+	}
+}
+
+rule("ball 1 - boundary check y axis")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Or(Compare(Y Component Of(Value In Array(Global Variable(B), 0)), <=, 20), Compare(Y Component Of(Value In Array(Global Variable(
+			B), 0)), >=, 31)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable At Index(B, 4, Multiply, -0.750);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Value In Array(Global Variable(B), 0), 200);
+		Play Effect(All Players(All Teams), Good Explosion, White, Value In Array(Global Variable(B), 0), 2);
+	}
+}
+
+rule("ball 1 - boundary check z axis")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Or(Compare(Z Component Of(Value In Array(Global Variable(B), 0)), <=, 95), Compare(Z Component Of(Value In Array(Global Variable(
+			B), 0)), >=, 115)) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable At Index(B, 5, Multiply, -0.900);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Value In Array(Global Variable(B), 0), 200);
+		Play Effect(All Players(All Teams), Good Explosion, White, Value In Array(Global Variable(B), 0), 2);
+	}
+}
+
+rule("player - boundary check x axis")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Or(Compare(X Component Of(Position Of(Event Player)), <=, -2.000), Compare(X Component Of(Position Of(Event Player)), >=, 36))
+			== True;
+		Player Variable(Event Player, B) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Event Player, Vector(17, 22, 105)), 5, To World, Cancel Contrary Motion);
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("player - boundary check y axis")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Or(Compare(Y Component Of(Position Of(Event Player)), <=, 20), Compare(Y Component Of(Position Of(Event Player)), >=, 31)) == True;
+		Player Variable(Event Player, B) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Event Player, Vector(17, 22, 105)), 5, To World, Cancel Contrary Motion);
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("player - boundary check z axis")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Or(Compare(Z Component Of(Position Of(Event Player)), <=, 95), Compare(Z Component Of(Position Of(Event Player)), >=, 115))
+			== True;
+		Player Variable(Event Player, B) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Event Player, Vector(17, 22, 105)), 5, To World, Cancel Contrary Motion);
+		Wait(0.032, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("kill on hit")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Distance Between(Eye Position(Event Player), Value In Array(Global Variable(B), 0)) <= 0.850;
+	}
+
+	actions
+	{
+		Kill(Event Player, Null);
+	}
+}
