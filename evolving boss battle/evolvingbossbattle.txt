@@ -3,7 +3,7 @@ rule("=============================================================== debug heal
 	event
 	{
 		Ongoing - Each Player;
-		All;
+		Team 1;
 		All;
 	}
 
@@ -11,15 +11,18 @@ rule("=============================================================== debug heal
 	{
 		Is Button Held(Event Player, Secondary Fire) == True;
 		Hero Of(Event Player) == Hero(Doomfist);
+		Is Button Held(Event Player, Crouch) == True;
 	}
 
 	actions
 	{
-		Heal(Event Player, Null, 4000);
+		Heal(Event Player, Event Player, 4000);
+		Wait(0.250, Ignore Condition);
+		Loop If Condition Is True;
 	}
 }
 
-rule("=============================================================== debug damage self interact(turn off in real game)")
+rule("=============================================================== debug damage left click(turn off in real game)")
 {
 	event
 	{
@@ -30,8 +33,9 @@ rule("=============================================================== debug dama
 
 	conditions
 	{
-		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Crouch) == True;
 		disabled Hero Of(Event Player) == Hero(Doomfist);
+		Is Button Held(Event Player, Interact) == True;
 	}
 
 	actions
@@ -67,15 +71,19 @@ rule("init - boss")
 		Modify Global Variable(B, Append To Array, False);
 		Set Global Variable(C, Empty Array);
 		Set Global Variable(D, True);
+		Set Player Variable(Event Player, D, 0);
 		Set Global Variable(E, Null);
+		Set Player Variable(Event Player, E, 0);
 		Set Global Variable(F, Empty Array);
 		Set Global Variable(G, Empty Array);
 		Set Global Variable(H, True);
+		Set Player Variable(Event Player, H, False);
 		Set Global Variable(I, 0);
 		Set Global Variable(J, 0);
 		Set Global Variable(K, 0);
 		Set Global Variable(L, Empty Array);
 		Set Global Variable(M, False);
+		Set Global Variable(N, False);
 		Set Player Variable(Event Player, N, Null);
 		Set Global Variable(S, False);
 		Set Global Variable(T, False);
@@ -83,9 +91,17 @@ rule("init - boss")
 		Set Global Variable(W, Event Player);
 		Set Player Variable(Event Player, K, 0);
 		Set Player Variable(Event Player, J, 0);
+		Set Player Variable(Event Player, R, 0);
 		Set Player Variable(Event Player, G, 0);
 		Set Player Variable(Event Player, M, Null);
+		Set Player Variable(Event Player, X, 0);
 		Set Global Variable(Z, False);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load", Null, Null, Null), String("{0}%", Server Load,
+			Null, Null), Null), Null, Null, Right, -2.000, White, White, White, Visible To and String);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load Average", Null, Null, Null), String("{0}%",
+			Server Load Average, Null, Null), Null), Null, Null, Right, -1.000, White, White, White, Visible To and String);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load Peak", Null, Null, Null), String("{0}%",
+			Server Load Peak, Null, Null), Null), Null, Null, Right, 0, White, White, White, Visible To and String);
 	}
 }
 
@@ -101,13 +117,11 @@ rule("----init boss health and preload heroes")
 	conditions
 	{
 		Has Spawned(Event Player) == True;
-		Max Health(Event Player) < 2500;
 	}
 
 	actions
 	{
 		Set Max Health(Event Player, Multiply(10, 10000));
-		Preload Hero(Event Player, Hero(Reinhardt));
 		Preload Hero(Event Player, Hero(Orisa));
 		Preload Hero(Event Player, Hero(Roadhog));
 		Preload Hero(Event Player, Hero(Winston));
@@ -135,13 +149,23 @@ rule("----generate HUD for bosses + heal")
 		Set Healing Received(Event Player, 1000);
 		Start Heal Over Time(Event Player, Event Player, 3, Multiply(50, 10000));
 		Start Heal Over Time(Event Player, Event Player, 3, Multiply(50, 10000));
+		Wait(0.016, Ignore Condition);
 		Destroy HUD Text(Value In Array(Global Variable(C), 0));
 		Destroy HUD Text(Value In Array(Global Variable(C), 1));
 		Destroy HUD Text(Value In Array(Global Variable(C), 2));
+		Wait(0.016, Ignore Condition);
 		Destroy HUD Text(Value In Array(Global Variable(C), 3));
+		Destroy HUD Text(Value In Array(Global Variable(C), 4));
+		Destroy HUD Text(Value In Array(Global Variable(C), 5));
 		Wait(0.016, Ignore Condition);
+		Destroy HUD Text(Value In Array(Global Variable(C), 6));
+		Destroy HUD Text(Value In Array(Global Variable(C), 7));
+		Destroy HUD Text(Value In Array(Global Variable(C), 8));
+		Wait(0.016, Ignore Condition);
+		Destroy HUD Text(Value In Array(Global Variable(C), 9));
+		Destroy HUD Text(Value In Array(Global Variable(C), 10));
 		Set Global Variable(C, Empty Array);
-		Wait(0.016, Ignore Condition);
+		Wait(0.128, Ignore Condition);
 		Skip If(Or(Compare(Hero Of(Event Player), ==, Hero(Winston)), Compare(Hero Of(Event Player), ==, Hero(Genji))), 2);
 		Create HUD Text(All Players(All Teams), Hero Icon String(Hero Of(Event Player)), Null, String("{0}: {1}", String("Current Phase",
 			Null, Null, Null), Value In Array(Global Variable(B), 0), Null), Top, 0, Red, White, White, Visible To and String);
@@ -197,8 +221,9 @@ rule("----boss phase change")
 
 	actions
 	{
-		Set Global Variable At Index(B, 1, Hero Of(Event Player));
 		Modify Global Variable At Index(B, 0, Add, 1);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable At Index(B, 1, Hero Of(Event Player));
 	}
 }
 
@@ -220,15 +245,22 @@ rule("----boss enrage mechanic")
 	actions
 	{
 		Set Global Variable(S, True);
+		Wait(0.016, Ignore Condition);
 		Play Effect(All Players(All Teams), Explosion Sound, Red, Position Of(Event Player), 200);
+		Wait(0.032, Ignore Condition);
 		Play Effect(All Players(All Teams), Bad Explosion, Red, Position Of(Event Player), 50);
 		Clear Status(Event Player, Frozen);
 		Clear Status(Event Player, Hacked);
-		Create In-World Text(All Players(All Teams), String("Danger", Null, Null, Null), Event Player, 15, Do Not Clip,
+		Wait(0.016, Ignore Condition);
+		Create In-World Text(All Players(All Teams), String("{0}: {1}", String("Danger", Null, Null, Null), String("{0} {1} {2}", String(
+			"No", Null, Null, Null), String("Over", Null, Null, Null), String("{0} {1} {2}", String("Hack", Null, Null, Null), String(
+			"Stun", Null, Null, Null), String("Status", Null, Null, Null))), Null), Event Player, 15, Do Not Clip,
 			Visible To Position and String);
 		Set Player Variable(Event Player, T, Last Text ID);
-		Create HUD Text(All Players(All Teams), String("Danger", Null, Null, Null), Null, Null, Top, 20, Red, White, White,
-			Visible To and String);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Danger", Null, Null, Null), String("{0} {1} {2}", String("No",
+			Null, Null, Null), String("Over", Null, Null, Null), String("{0} {1} {2}", String("Hack", Null, Null, Null), String("Stun",
+			Null, Null, Null), String("Status", Null, Null, Null))), Null), Null, Null, Top, 20, Red, White, White, Visible To and String);
 		Set Player Variable(Event Player, S, Last Text ID);
 		Set Status(Event Player, Null, Invincible, 10);
 		Set Status(Event Player, Null, Phased Out, 10);
@@ -265,22 +297,40 @@ rule("----reset variables on boss phase change, slow motion, in-world text")
 
 	actions
 	{
+		Destroy HUD Text(Value In Array(Global Variable(F), 6));
+		Wait(0.016, Ignore Condition);
+		Destroy HUD Text(Player Variable(Event Player, L));
+		Wait(0.032, Ignore Condition);
+		Skip If(Compare(Hero Of(Event Player), ==, Hero(Genji)), 1);
 		Set Player Variable(Event Player, B, 0);
 		Set Global Variable(D, True);
+		Set Player Variable(Event Player, D, 0);
+		Wait(0.016, Ignore Condition);
 		Set Global Variable(E, Null);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, E, 0);
 		Set Global Variable(F, Empty Array);
+		Wait(0.016, Ignore Condition);
 		Set Global Variable(G, Empty Array);
 		Set Player Variable(Event Player, G, 0);
+		Wait(0.016, Ignore Condition);
 		Set Global Variable(H, True);
 		Set Global Variable(I, 0);
+		Wait(0.016, Ignore Condition);
 		Set Player Variable(Event Player, K, 0);
 		Set Global Variable(J, 0);
+		Wait(0.016, Ignore Condition);
 		Set Player Variable(Event Player, J, 0);
 		Set Global Variable(K, 0);
 		Set Global Variable(L, Empty Array);
+		Wait(0.016, Ignore Condition);
 		Set Global Variable(M, False);
 		Set Player Variable(Event Player, M, Null);
 		Set Player Variable(Event Player, N, Null);
+		Set Global Variable(Z, False);
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(N, False);
+		Set Global Variable(U, 0);
 		Create In-World Text(All Players(All Teams), String("{0}: {1}", Hero Of(Event Player), String("{0} / {1}", Round To Integer(Health(
 			Event Player), Down), Round To Integer(Max Health(Event Player), Down), Null), Null), Event Player, 3, Do Not Clip,
 			Visible To Position and String);
@@ -292,7 +342,7 @@ rule("----reset variables on boss phase change, slow motion, in-world text")
 	}
 }
 
-rule("----reset variables on boss death")
+rule("----declare attacker victory on boss death")
 {
 	event
 	{
@@ -303,29 +353,7 @@ rule("----reset variables on boss death")
 
 	actions
 	{
-		Set Global Variable(B, Empty Array);
-		Wait(0.016, Ignore Condition);
-		Modify Global Variable(B, Append To Array, 0);
-		Wait(0.016, Ignore Condition);
-		Modify Global Variable(B, Append To Array, False);
-		Destroy HUD Text(Player Variable(Event Player, I));
-		Set Player Variable(Event Player, I, Null);
-		Wait(2, Ignore Condition);
-		Start Forcing Player To Be Hero(Event Player, Hero(Reinhardt));
-		Destroy All Effects;
-		Wait(3, Ignore Condition);
-		Set Global Variable(E, Null);
-		Set Global Variable(F, Empty Array);
-		Set Global Variable(G, Empty Array);
-		Set Global Variable(H, True);
-		Set Global Variable(L, Empty Array);
-		Set Global Variable(M, False);
-		Set Player Variable(Event Player, N, Null);
-		Set Global Variable(U, Round To Integer(0, Down));
-		Set Global Variable(T, False);
-		Set Global Variable(S, False);
-		Abort If(Not(Is Hero Being Played(Hero(Reinhardt), Team 1)));
-		Set Gravity(Event Player, 100);
+		Wait(1, Ignore Condition);
 		Declare Team Victory(Team 2);
 		Set Team Score(Team 2, 1);
 	}
@@ -370,9 +398,20 @@ rule("init - attackers")
 	actions
 	{
 		Set Player Variable(Event Player, A, True);
+		Set Player Variable(Event Player, S, False);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, F, 0);
 		Set Player Variable(Event Player, G, Null);
 		Set Player Variable(Event Player, H, 1);
+		Set Player Variable(Event Player, J, False);
 		Set Player Variable(Event Player, L, Null);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, P, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
 		Set Player Variable(Event Player, S, False);
 		Set Player Variable(Event Player, X, 0);
 		Set Player Variable(Event Player, Z, True);
@@ -398,17 +437,30 @@ rule("----attacker trinket")
 		Player Variable(Event Player, Z) != False;
 		Global Variable(Z) != True;
 		Global Variable(N) != True;
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+		Is Dead(Event Player) != True;
 	}
 
 	actions
 	{
-		Skip If(Compare(Player Variable(Event Player, Z), ==, False), 33);
+		Skip If(Compare(Player Variable(Event Player, Z), ==, False), 46);
 		Set Player Variable(Event Player, S, True);
 		Set Player Variable(Event Player, H, 1);
 		Set Player Variable(Event Player, Z, False);
-		Create Effect(All Players(All Teams), Good Aura, White, Event Player, 1.500, Visible To Position and Radius);
-		Set Player Variable(Event Player, K, Last Created Entity);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Clear Status(Event Player, Stunned);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, J, False);
 		Set Player Variable(Event Player, X, 20);
+		Destroy Effect(Player Variable(Event Player, T));
+		Destroy HUD Text(Player Variable(Event Player, V));
+		Destroy In-World Text(Player Variable(Event Player, W));
+		Destroy HUD Text(Player Variable(Event Player, G));
 		Play Effect(All Players(All Teams), Good Pickup Effect, White, Event Player, 100);
 		Set Status(Event Player, Null, Invincible, 3);
 		Set Status(Event Player, Null, Phased Out, 3);
@@ -421,21 +473,23 @@ rule("----attacker trinket")
 		Clear Status(Event Player, Asleep);
 		Clear Status(Event Player, Knocked Down);
 		Clear Status(Event Player, Burning);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Good Aura, White, Event Player, 1.500, Visible To Position and Radius);
+		Set Player Variable(Event Player, K, Last Created Entity);
+		Start Heal Over Time(Event Player, Event Player, 3, 9999);
 		Set Healing Received(Event Player, 500);
+		Set Healing Dealt(Event Player, 500);
 		Set Damage Dealt(Event Player, 200);
 		Set Move Speed(Event Player, 200);
-		Wait(2.750, Ignore Condition);
+		Wait(3, Ignore Condition);
 		Destroy Effect(Player Variable(Event Player, K));
 		Set Healing Received(Event Player, 100);
 		Set Damage Dealt(Event Player, 100);
 		Set Move Speed(Event Player, 100);
 		Set Damage Received(Event Player, 100);
+		Set Healing Dealt(Event Player, 100);
 		Set Player Variable(Event Player, S, False);
-		Destroy Effect(Player Variable(Event Player, T));
 		Stop Heal Over Time(Player Variable(Event Player, U));
-		Destroy HUD Text(Player Variable(Event Player, V));
-		Destroy In-World Text(Player Variable(Event Player, W));
-		Destroy HUD Text(Player Variable(Event Player, G));
 		Modify Player Variable(Event Player, X, Subtract, 1);
 		Wait(1, Ignore Condition);
 		Loop If(Compare(Player Variable(Event Player, X), >, 0));
@@ -458,6 +512,7 @@ rule("----buff attacker ult - on")
 		Is Using Ultimate(Event Player) == True;
 		Player Variable(Event Player, Y) != True;
 		Hero Of(Event Player) != Hero(Genji);
+		Value In Array(Player Variable(Event Player, P), 3) != True;
 	}
 
 	actions
@@ -481,6 +536,7 @@ rule("----buff attacker ult - on for genji cause hese weak")
 		Is Using Ultimate(Event Player) == True;
 		Player Variable(Event Player, Y) != True;
 		Hero Of(Event Player) == Hero(Genji);
+		Value In Array(Player Variable(Event Player, P), 3) != True;
 	}
 
 	actions
@@ -505,6 +561,7 @@ rule("----buff attacker ult - off")
 	{
 		Is Using Ultimate(Event Player) != True;
 		Player Variable(Event Player, Y) == True;
+		Value In Array(Player Variable(Event Player, P), 3) != True;
 	}
 
 	actions
@@ -524,23 +581,68 @@ rule("----clear statuses on death")
 		All;
 	}
 
+	conditions
+	{
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+	}
+
 	actions
 	{
+		Set Player Variable(Event Player, J, False);
+		Set Player Variable(Event Player, S, False);
+		Destroy Effect(Value In Array(Player Variable(Event Player, D), 0));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, D), 1));
 		Destroy Effect(Player Variable(Event Player, T));
 		Destroy HUD Text(Player Variable(Event Player, G));
 		Destroy HUD Text(Player Variable(Event Player, V));
 		Destroy In-World Text(Player Variable(Event Player, W));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
 		Set Player Variable(Event Player, S, False);
 		Clear Status(Event Player, Knocked Down);
 		Clear Status(Event Player, Hacked);
 		Clear Status(Event Player, Burning);
 		Stop All Damage Over Time(Event Player);
 		Stop All Heal Over Time(Event Player);
+		Set Move Speed(Event Player, 100);
 		Set Healing Received(Event Player, 100);
 		Destroy Effect(Player Variable(Event Player, T));
 		Wait(0.200, Ignore Condition);
 		Stop All Damage Over Time(Event Player);
 		Stop All Heal Over Time(Event Player);
+	}
+}
+
+rule("----reset/clear player variables on boss change")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Event Player) != Value In Array(Global Variable(B), 1);
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, J, False);
+		Set Player Variable(Event Player, S, False);
+		Set Player Variable(Event Player, F, 0);
+		Skip If(Compare(Value In Array(Player Variable(Event Player, D), 3), !=, True), 1);
+		Set Player Variable At Index(Event Player, D, 3, False);
+		disabled Destroy HUD Text(Player Variable(Event Player, E));
+		Skip If(Compare(Player Variable(Event Player, G), ==, Null), 1);
+		Destroy HUD Text(Player Variable(Event Player, G));
+		Wait(0.250, Ignore Condition);
 	}
 }
 
@@ -564,7 +666,9 @@ rule("=========================================== Phase 1 Reinhardt(Placeholder)
 {
 	event
 	{
-		Ongoing - Global;
+		Ongoing - Each Player;
+		Team 1;
+		Bastion;
 	}
 }
 
@@ -603,13 +707,12 @@ rule("blazing charge - activate")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Reinhardt;
 	}
 
 	conditions
 	{
 		Is Using Ability 1(Event Player) == True;
-		Hero Of(Event Player) == Hero(Reinhardt);
 	}
 
 	actions
@@ -619,7 +722,7 @@ rule("blazing charge - activate")
 		Set Global Variable(L, Append To Array(Global Variable(L), Position Of(Event Player)));
 		Wait(0.096, Ignore Condition);
 		Loop If Condition Is True;
-		Wait(9, Ignore Condition);
+		Wait(8.500, Ignore Condition);
 		Set Global Variable(H, False);
 	}
 }
@@ -678,7 +781,7 @@ rule("blazing charge - enemy check - in")
 			Null), String("Point", Null, Null, Null), Null), Null), Null, Null, Left, 50, Red, White, White, Visible To and String);
 		Set Player Variable(Event Player, F, Last Text ID);
 		Set Status(Event Player, All Players(Team 1), Burning, 1.500);
-		Start Damage Over Time(Event Player, All Players(Team 1), 2, 30);
+		Start Damage Over Time(Event Player, All Players(Team 1), 2, 55);
 		Skip If(Compare(Player Variable(Event Player, S), ==, True), 1);
 		Set Move Speed(Event Player, 70);
 		Wait(0.250, Ignore Condition);
@@ -696,12 +799,11 @@ rule("used firestrike - fire man status")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Reinhardt;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Reinhardt), Team 1) == True;
 		Is Using Ability 2(Event Player) == True;
 	}
 
@@ -752,7 +854,7 @@ rule("firestrike burn effect")
 	{
 		Abort If Condition Is False;
 		Set Status(Victim, Null, Burning, 5);
-		Start Damage Over Time(Victim, Attacker, 5, 25);
+		Start Damage Over Time(Victim, Attacker, 5, 55);
 	}
 }
 
@@ -762,14 +864,14 @@ rule("reflective shield - damage reflect")
 	{
 		Player took damage;
 		Team 1;
-		All;
+		Reinhardt;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Reinhardt), Team 1) == True;
-		Is Button Held(Players On Hero(Hero(Reinhardt), Team 1), Secondary Fire) == True;
+		Is Button Held(Event Player, Secondary Fire) == True;
 		Has Status(Attacker, Invincible) != True;
+		Has Status(Event Player, Phased Out) != True;
 	}
 
 	actions
@@ -784,12 +886,11 @@ rule("reflective shield - check on")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Reinhardt;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Reinhardt), Team 1) == True;
 		Is Button Held(Event Player, Secondary Fire) == True;
 		Is Using Ability 1(Event Player) != True;
 		Is Button Held(Event Player, Primary Fire) != True;
@@ -799,7 +900,7 @@ rule("reflective shield - check on")
 		Has Status(Event Player, Frozen) != True;
 		Has Status(Event Player, Rooted) != True;
 		Has Status(Event Player, Stunned) != True;
-		Global Variable(S) != True;
+		Has Status(Event Player, Phased Out) != True;
 	}
 
 	actions
@@ -821,7 +922,7 @@ rule("reflective shield - check on")
 		Disallow Button(Event Player, Crouch);
 		Set Damage Received(Event Player, 35);
 		Skip If(Has Status(Players Within Radius(Event Player, 3.500, Team 2, Off), Burning), 2);
-		Start Damage Over Time(Players Within Radius(Event Player, 3.500, Team 2, Off), Event Player, 10, 25);
+		Start Damage Over Time(Players Within Radius(Event Player, 3.500, Team 2, Off), Event Player, 5, 25);
 		Set Status(Players Within Radius(Event Player, 3.500, Team 2, Off), Event Player, Burning, 10);
 	}
 }
@@ -832,12 +933,11 @@ rule("reflective shield - check off")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Reinhardt;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Reinhardt), Team 1) == True;
 		Is Button Held(Event Player, Secondary Fire) != True;
 	}
 
@@ -878,6 +978,13 @@ rule("=========================================== Phase 2 - Orisa ==============
 
 	actions
 	{
+		Set Damage Received(Event Player, 100);
+		Destroy Effect(Value In Array(Global Variable(F), 0));
+		Wait(0.016, Ignore Condition);
+		Destroy Effect(Value In Array(Global Variable(F), 1));
+		Wait(0.016, Ignore Condition);
+		Destroy Effect(Value In Array(Global Variable(F), 2));
+		Wait(0.016, Ignore Condition);
 		Destroy All Effects;
 		Pause Match Time;
 		Destroy Effect(Global Variable(E));
@@ -890,7 +997,7 @@ rule("=========================================== Phase 2 - Orisa ==============
 		Disallow Button(Event Player, Secondary Fire);
 		Start Forcing Player To Be Hero(Event Player, Hero(Orisa));
 		Stop Forcing Player To Be Hero(Event Player);
-		Wait(3, Ignore Condition);
+		Wait(1, Ignore Condition);
 		Set Gravity(Event Player, 10000);
 		Create Effect(All Players(All Teams), Sparkles, Green, Event Player, 2.500, Visible To Position and Radius);
 		Set Player Variable(Event Player, Z, True);
@@ -909,12 +1016,11 @@ rule("back away - on")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		Is Using Ability 1(Event Player) == True;
 	}
 
@@ -931,12 +1037,11 @@ rule("back away - off")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		Is Using Ability 1(Event Player) != True;
 	}
 
@@ -970,11 +1075,11 @@ rule("back away - player check")
 	actions
 	{
 		Set Status(Event Player, Null, Stunned, 1);
-		Damage(Event Player, Global Variable(W), Multiply(Multiply(Player Variable(Event Player, H), 7), Multiply(0.010, Max Health(
-			Event Player))));
 		Apply Impulse(Event Player, Vector Towards(Position Of(Global Variable(W)), Position Of(Event Player)), Multiply(Distance Between(
 			Position Of(Global Variable(W)), Position Of(Event Player)), 20), To World, Cancel Contrary Motion);
 		Apply Impulse(Event Player, Up, 5, To World, Cancel Contrary Motion);
+		Damage(Event Player, Global Variable(W), Multiply(Multiply(Player Variable(Event Player, H), 7), Multiply(0.010, Max Health(
+			Event Player))));
 		Destroy HUD Text(Player Variable(Event Player, G));
 		Set Player Variable(Event Player, G, Null);
 		Wait(0.100, Ignore Condition);
@@ -989,22 +1094,23 @@ rule("trail of halt - init conditions")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		Is Button Held(Event Player, Secondary Fire) == True;
 		Player Variable(Event Player, H) != True;
 	}
 
 	actions
 	{
-		Set Player Variable(Event Player, H, True);
-		Set Global Variable(E, Facing Direction Of(Event Player));
+		Wait(0.096, Ignore Condition);
 		Set Global Variable(D, Eye Position(Event Player));
+		Set Global Variable(E, Facing Direction Of(Event Player));
 		Set Player Variable(Event Player, I, 0);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, H, True);
 	}
 }
 
@@ -1014,19 +1120,19 @@ rule("trail of halt - activation")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		Is Firing Secondary(Event Player) == True;
 		Global Variable(J) == 0;
+		Player Variable(Event Player, H) == True;
 	}
 
 	actions
 	{
-		Wait(0.050, Ignore Condition);
+		Wait(0.048, Ignore Condition);
 		Modify Global Variable(I, Add, 1);
 		Create Effect(All Players(All Teams), Bad Aura, Green, Add(Global Variable(D), Multiply(Global Variable(E), Global Variable(I))),
 			1.500, None);
@@ -1055,12 +1161,11 @@ rule("trail of halt - player cancellation")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		And(Is Button Held(Event Player, Secondary Fire), And(Compare(Global Variable(J), ==, 1), Compare(Global Variable(I), <=, 50)))
 			== True;
 	}
@@ -1082,7 +1187,7 @@ rule("trail of halt - detection")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
+		Hero Of(Global Variable(W)) == Hero(Orisa);
 		Global Variable(H) != True;
 		Is True For Any(Global Variable(G), Compare(Distance Between(Current Array Element, Event Player), <=, 2.800)) == True;
 		Has Status(Event Player, Invincible) != True;
@@ -1126,7 +1231,7 @@ rule("trail of halt - deletion")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
@@ -1156,18 +1261,17 @@ rule("super defense charger")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Orisa;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Orisa), Team 1) == True;
 		Is Using Ultimate(Event Player) == True;
 	}
 
 	actions
 	{
-		Set Damage Received(Event Player, 10);
+		Set Damage Received(Event Player, 15);
 		Wait(0.250, Ignore Condition);
 		Loop If Condition Is True;
 		Set Damage Received(Event Player, 100);
@@ -1193,9 +1297,10 @@ rule("=========================================== Phase 3 - Roadhog ============
 	{
 		Destroy All Effects;
 		Set Damage Received(Event Player, 100);
+		Set Player Variable(All Players(Team 2), F, 0);
 		Start Forcing Player To Be Hero(Event Player, Hero(Roadhog));
 		Stop Forcing Player To Be Hero(Event Player);
-		Wait(3, Ignore Condition);
+		Wait(1, Ignore Condition);
 		Set Gravity(Event Player, 100);
 		Create Effect(All Players(All Teams), Cloud, Yellow, Event Player, 3, Visible To Position and Radius);
 		Create Effect(All Players(All Teams), Cloud, Yellow, Event Player, 3, Visible To Position and Radius);
@@ -1203,21 +1308,26 @@ rule("=========================================== Phase 3 - Roadhog ============
 		Destroy HUD Text(Player Variable(All Players(Team 2), G));
 		Set Player Variable(All Players(Team 2), H, 1);
 		Set Player Variable(All Players(Team 2), G, Null);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Ultimate Ability", Null, Null, Null), String("{0}%",
+			Global Variable(U), Null, Null), Null), Null, Null, Top, 10, Yellow, White, White, Visible To and String);
+		Modify Global Variable(C, Append To Array, Last Text ID);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, 0);
+		Modify Player Variable(Event Player, P, Append To Array, Health(Event Player));
 	}
 }
 
-rule("roadhog ult modifier")
+rule("roadhog regular ult modifier - on")
 {
 	event
 	{
 		Player dealt damage;
 		Team 1;
-		All;
+		Roadhog;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
 		Is Using Ultimate(Event Player) == True;
 		Victim != Team 1;
 		Has Status(Victim, Invincible) != True;
@@ -1225,32 +1335,33 @@ rule("roadhog ult modifier")
 
 	actions
 	{
-		Apply Impulse(Victim, Vector Towards(Victim, Event Player), 12, To World, Cancel Contrary Motion);
+		Skip If(Compare(Value In Array(Player Variable(Victim, P), 0), !=, True), 1);
+		Set Player Variable At Index(Victim, P, 2, True);
+		Apply Impulse(Victim, Vector Towards(Victim, Global Variable(W)), 12, To World, Cancel Contrary Motion);
 		Set Damage Dealt(Event Player, 15);
-		Set Status(Event Player, Null, Invincible, 9999);
-		Start Heal Over Time(Event Player, Event Player, 3, 60);
+		Heal(Event Player, Event Player, 145);
+		Set Damage Received(Event Player, 20);
 	}
 }
 
-rule("not using roadhog ult")
+rule("roadhog regular ult modifier - off")
 {
 	event
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Roadhog;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
 		Is Using Ultimate(Event Player) != True;
 	}
 
 	actions
 	{
 		Set Damage Dealt(Event Player, 100);
-		Clear Status(Event Player, Invincible);
+		Set Damage Received(Event Player, 100);
 	}
 }
 
@@ -1266,25 +1377,37 @@ rule("gas healing vicinity")
 	conditions
 	{
 		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
-		Array Contains(Players Within Radius(Global Variable(W), 3, Team 2, Off), Event Player) == True;
+		Distance Between(Position Of(Event Player), Position Of(Global Variable(W))) <= 3;
+		Player Variable(Event Player, J) == False;
 		Player Variable(Event Player, S) != True;
-		Has Status(Event Player, Invincible) != True;
+		Is Dead(Event Player) != True;
 	}
 
 	actions
 	{
-		Set Player Variable(Event Player, S, True);
+		Set Player Variable(Event Player, J, True);
+		Destroy Effect(Player Variable(Event Player, T));
+		Stop Heal Over Time(Player Variable(Event Player, U));
+		Destroy In-World Text(Player Variable(Event Player, W));
+		Destroy HUD Text(Player Variable(Event Player, V));
+		Wait(0.032, Ignore Condition);
 		Create Effect(All Players(All Teams), Cloud, Yellow, Event Player, 1.200, Visible To Position and Radius);
 		Set Player Variable(Event Player, T, Last Created Entity);
+		Wait(0.032, Ignore Condition);
 		Start Heal Over Time(Event Player, Event Player, 9999, Multiply(Max Health(Event Player), Multiply(20, 0.010)));
 		Set Player Variable(Event Player, U, Last Heal Over Time ID);
+		Wait(0.032, Ignore Condition);
 		Set Damage Received(Event Player, 150);
-		Create HUD Text(Event Player, String("Unsafe", Null, Null, Null), Null, Null, Left, 80, Yellow, White, White,
+		Create HUD Text(Event Player, String("{0}: {1}", String("Unstable", Null, Null, Null), Count Of(Filtered Array(Player Variable(
+			Event Player, P), Compare(Current Array Element, ==, True))), Null), Null, Null, Left, 80, Yellow, White, White,
 			Visible To and String);
 		Set Player Variable(Event Player, V, Last Text ID);
-		Create In-World Text(All Players(Team 1), String("Target", Null, Null, Null), Event Player, 1.500, Do Not Clip,
+		Wait(0.032, Ignore Condition);
+		Create In-World Text(All Players(Team 1), String("{0}: {1}", String("Target", Null, Null, Null), Count Of(Filtered Array(
+			Player Variable(Event Player, P), Current Array Element)), Null), Event Player, 1.500, Do Not Clip,
 			Visible To Position and String);
 		Set Player Variable(Event Player, W, Last Text ID);
+		Set Player Variable At Index(Event Player, P, 0, True);
 	}
 }
 
@@ -1307,14 +1430,14 @@ rule("aoe hook sleep")
 
 	actions
 	{
+		Skip If(Compare(Value In Array(Player Variable(Event Player, P), 0), !=, True), 1);
+		Set Player Variable At Index(Filtered Array(Players Within Radius(Event Player, 4, Team 2, Off), Compare(Value In Array(
+			Player Variable(Current Array Element, P), 0), ==, True)), P, 1, True);
 		Set Status(Players Within Radius(Event Player, 4, Team 2, Off), Global Variable(W), Asleep, 2.500);
-		Skip If(Compare(Player Variable(Event Player, G), !=, Null), 2);
-		Create HUD Text(Event Player, String("Unsafe", Null, Null, Null), Null, Null, Left, 90, Red, White, White, Visible To and String);
-		Set Player Variable(Event Player, G, Last Text ID);
 	}
 }
 
-rule("gas healing explosion - 1 stack")
+rule("take a breather explosion - 1/2/3/4 stacks")
 {
 	event
 	{
@@ -1325,86 +1448,374 @@ rule("gas healing explosion - 1 stack")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
-		Player Variable(Event Player, S) != False;
+		Hero Of(Global Variable(W)) == Hero(Roadhog);
+		Player Variable(Event Player, J) == True;
 		Is Using Ability 2(Global Variable(W)) == True;
 		Player Variable(Event Player, M) != True;
-		Player Variable(Event Player, G) == Null;
+		Value In Array(Player Variable(Event Player, P), 0) == True;
+		Player Variable(Event Player, S) != True;
+		Count Of(Filtered Array(All Players(Team 2), Compare(Value In Array(Player Variable(Current Array Element, D), 2), ==, True)))
+			!= Count Of(All Players(Team 2));
 	}
 
 	actions
 	{
+		Wait(0.016, Ignore Condition);
 		Set Damage Received(Event Player, 100);
 		Set Healing Received(Event Player, 0);
-		Wait(0.100, Ignore Condition);
-		Damage(Event Player, Global Variable(W), Divide(Health(Event Player), 2));
-		Wait(0.100, Ignore Condition);
-		Set Damage Received(Event Player, 150);
-		Heal(Global Variable(W), Event Player, 1000);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, F, 0);
+		Damage(Event Player, Global Variable(W), Multiply(Max Health(Event Player), Multiply(0.300, Count Of(Filtered Array(
+			Player Variable(Event Player, P), Current Array Element)))));
+		Heal(Global Variable(W), Event Player, Add(500, Multiply(500, Count Of(Filtered Array(Player Variable(Event Player, P),
+			Current Array Element)))));
+		Wait(0.032, Ignore Condition);
+		Set Damage Received(Event Player, Add(50, Multiply(50, Count Of(Filtered Array(Player Variable(Event Player, P),
+			Current Array Element)))));
+		Set Status(Event Player, Null, Stunned, Add(1, Multiply(0.500, Count Of(Filtered Array(Player Variable(Event Player, P),
+			Current Array Element)))));
 		Set Player Variable(Event Player, M, True);
 		Destroy Effect(Player Variable(Event Player, T));
 		Stop Heal Over Time(Player Variable(Event Player, U));
-		Destroy HUD Text(Player Variable(Event Player, V));
-		Set Player Variable(Event Player, V, False);
 		Destroy In-World Text(Player Variable(Event Player, W));
+		Destroy HUD Text(Player Variable(Event Player, V));
+		Wait(0.064, Ignore Condition);
+		Set Player Variable(Event Player, V, False);
 		Set Player Variable(Event Player, W, False);
-		Set Status(Event Player, Null, Stunned, 2.500);
 		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 100);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Set Global Variable(G, Empty Array);
 		Wait(5, Ignore Condition);
 		Set Damage Received(Event Player, 100);
 		Set Healing Received(Event Player, 100);
 		Wait(10, Ignore Condition);
-		Set Player Variable(Event Player, S, False);
+		Set Player Variable(Event Player, J, False);
 		Set Player Variable(Event Player, M, False);
 	}
 }
 
-rule("gas healing explosion - 2 stack")
+rule("roadhog took damage- check")
 {
 	event
 	{
-		Ongoing - Each Player;
-		Team 2;
-		All;
+		Player took damage;
+		Team 1;
+		Roadhog;
 	}
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
-		Player Variable(Event Player, S) != False;
-		Is Using Ability 2(Global Variable(W)) == True;
-		Player Variable(Event Player, M) != True;
-		Player Variable(Event Player, G) != Null;
+		Count Of(Player Variable(Event Player, P)) > 1;
 	}
 
 	actions
 	{
-		Set Damage Received(Event Player, 100);
-		Set Healing Received(Event Player, 0);
-		Wait(0.100, Ignore Condition);
-		Heal(Global Variable(W), Event Player, 1500);
-		Set Healing Received(Event Player, 0);
+		Set Player Variable At Index(Event Player, P, 1, Health(Event Player));
+	}
+}
+
+rule("roadhog dealt damage- check")
+{
+	event
+	{
+		Player dealt damage;
+		Team 1;
+		Roadhog;
+	}
+
+	conditions
+	{
+		Global Variable(U) < 100;
+		Count Of(Player Variable(Event Player, P)) > 1;
+		Global Variable(D) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(U, Add, Divide(Event Damage, 200));
+		Skip If(Compare(Global Variable(U), <, 100), 1);
+		Set Global Variable(U, 100);
+	}
+}
+
+rule("roadhog healed check")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Roadhog;
+	}
+
+	conditions
+	{
+		Health(Event Player) > Value In Array(Player Variable(Event Player, P), 1);
+		Global Variable(U) < 100;
+		Count Of(Player Variable(Event Player, P)) > 1;
+		Global Variable(D) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(U, Add, Multiply(Subtract(Health(Event Player), Value In Array(Player Variable(Event Player, P), 1)),
+			Absolute Value(0.003)));
+		Wait(0.016, Ignore Condition);
+		Set Player Variable At Index(Event Player, P, 1, Health(Event Player));
+		Skip If(Compare(Global Variable(U), <, 100), 1);
+		Set Global Variable(U, 100);
+		disabled Set Player Variable(Event Player, B, Subtract(Health(Event Player), Value In Array(Player Variable(Event Player, A), 0)));
+	}
+}
+
+rule("roadhog 2nd ult - activate - the apocalypse")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Roadhog;
+	}
+
+	conditions
+	{
+		Global Variable(U) >= 100;
+		Global Variable(D) == True;
+		Is Button Held(Event Player, Interact) == True;
+		Not(Is Dead(Event Player)) == True;
+		Is Using Ultimate(Event Player) == False;
+		Is In Air(Event Player) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(D, False);
+		Set Global Variable(S, True);
+		Set Status(Event Player, Null, Invincible, 6);
+		Set Status(Event Player, Null, Phased Out, 6);
+		Set Status(Event Player, Null, Knocked Down, 0.016);
+		Wait(0.032, Ignore Condition);
+		Communicate(Event Player, Emote Up);
+		Set Global Variable(I, 0);
+		Modify Global Variable(F, Append To Array, Add(Position Of(Event Player), Vector(0, 25, 0)));
+		Modify Global Variable(F, Append To Array, Vector(X Component Of(Facing Direction Of(Event Player)), -0.900, Z Component Of(
+			Facing Direction Of(Event Player))));
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Good Aura, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 13, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(S, False);
+		Create Effect(All Players(All Teams), Good Aura, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 13, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Sphere, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Sphere, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 12, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 13, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, 5, 0)), Multiply(
+			Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Bad Aura Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, Green, Add(Add(Value In Array(Global Variable(F), 0), Vector(0, -5.000, 0)), Multiply(
+			Value In Array(Global Variable(F), 1), Player Variable(Event Player, E))), 7, Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Chase Player Variable Over Time(Event Player, E, 25, 5.250, Destination and Duration);
+		Wait(5.300, Ignore Condition);
+		Play Effect(All Players(All Teams), Bad Explosion, Green, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 40);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Explosion Sound, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Set Global Variable(D, True);
+		Set Player Variable At Index(Filtered Array(Players Within Radius(Value In Array(Global Variable(F), 0), 35, Team 2, Off), True),
+			P, 3, True);
+		Wait(0.032, Ignore Condition);
+		Modify Player Variable(Filtered Array(All Players(Team 2), Compare(Player Variable(Current Array Element, S), ==, True)), F, Add,
+			30);
+		Play Effect(All Players(All Teams), Bad Explosion, Yellow, Add(Value In Array(Global Variable(F), 0), Multiply(Value In Array(
+			Global Variable(F), 1), Player Variable(Event Player, E))), 10000);
+		Stop Chasing Player Variable(Event Player, E);
+		Set Player Variable(Event Player, E, 0);
 		Wait(0.250, Ignore Condition);
-		Damage(Event Player, Global Variable(W), Multiply(Max Health(Event Player), Multiply(75, 0.010)));
-		Wait(0.100, Ignore Condition);
-		Set Damage Received(Event Player, 200);
-		Set Player Variable(Event Player, M, True);
-		Destroy Effect(Player Variable(Event Player, T));
-		Stop Heal Over Time(Player Variable(Event Player, U));
-		Destroy HUD Text(Player Variable(Event Player, V));
-		Set Player Variable(Event Player, V, False);
-		Destroy In-World Text(Player Variable(Event Player, W));
-		Set Player Variable(Event Player, W, False);
-		Set Status(Event Player, Null, Stunned, 2.500);
-		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 100);
-		Destroy HUD Text(Player Variable(Event Player, G));
-		Set Player Variable(Event Player, G, Null);
-		Wait(5, Ignore Condition);
-		Set Damage Received(Event Player, 100);
+		Set Global Variable(U, 0);
+	}
+}
+
+rule("roadhog 2nd ult - cleanup effects")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Roadhog;
+	}
+
+	conditions
+	{
+		Global Variable(F) != Empty Array;
+		Global Variable(D) == True;
+	}
+
+	actions
+	{
+		Destroy Effect(Value In Array(Global Variable(F), Global Variable(I)));
+		Wait(0.048, Ignore Condition);
+		Modify Global Variable(I, Add, 1);
+		Loop If(Compare(Count Of(Global Variable(F)), >, Global Variable(I)));
+		Set Global Variable(I, 0);
+		Set Global Variable(F, Empty Array);
+		Set Player Variable(Global Variable(W), E, 0);
+	}
+}
+
+rule("roadhog 2nd ult - detection")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Value In Array(Player Variable(Event Player, P), 3) == True;
+		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Player Variable(Event Player, D), !=, Empty Array), 5);
+		Create Effect(All Players(All Teams), Cloud, Green, Event Player, 2, Visible To Position and Radius);
+		Set Player Variable At Index(Event Player, D, 0, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Create HUD Text(Event Player, String("{0}: {1}", String("Sinking", Null, Null, Null), Subtract(60, Player Variable(Event Player,
+			F)), Null), Null, Null, Left, 51, Green, White, White, Visible To and String);
+		Set Player Variable At Index(Event Player, D, 1, Last Text ID);
+		Set Damage Dealt(Event Player, 50);
+		Set Move Speed(Event Player, 60);
+		Set Healing Received(Event Player, 50);
+		Set Projectile Speed(Event Player, 10);
+		Wait(0.500, Ignore Condition);
+		Loop If Condition Is True;
+		Set Damage Dealt(Event Player, 100);
+		Set Move Speed(Event Player, 100);
 		Set Healing Received(Event Player, 100);
-		Wait(10, Ignore Condition);
-		Set Player Variable(Event Player, S, False);
-		Set Player Variable(Event Player, M, False);
+		Set Projectile Speed(Event Player, 100);
+		Destroy Effect(Value In Array(Player Variable(Event Player, D), 0));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, D), 1));
+		Set Player Variable(Event Player, D, Empty Array);
+	}
+}
+
+rule("roadhog 2nd ult - cd")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
+		Count Of(Player Variable(Event Player, D)) >= 2;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, F, Add, 1);
+		Wait(1, Ignore Condition);
+		Loop If(And(Compare(Player Variable(Event Player, F), <, 60), Compare(Value In Array(Player Variable(Event Player, P), 3), ==,
+			True)));
+		Set Player Variable(Event Player, F, 0);
+		Set Player Variable At Index(Event Player, P, 3, False);
+		Destroy Effect(Value In Array(Player Variable(Event Player, D), 0));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, D), 1));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, D, Empty Array);
+	}
+}
+
+rule("roadhog 2nd ult - exodia")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Count Of(Filtered Array(Player Variable(Event Player, P), Current Array Element)) == 4;
+		Is Hero Being Played(Hero(Roadhog), Team 1) == True;
+		Count Of(Player Variable(Event Player, D)) >= 2;
+	}
+
+	actions
+	{
+		Set Player Variable At Index(Event Player, D, 2, True);
+	}
+}
+
+rule("roadhog exodia - obliterate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Roadhog;
+	}
+
+	conditions
+	{
+		Count Of(Filtered Array(All Players(Team 2), Compare(Value In Array(Player Variable(Current Array Element, D), 2), ==, True)))
+			== Count Of(All Players(Team 2));
+		Is Using Ability 2(Global Variable(W)) == True;
+	}
+
+	actions
+	{
+		Kill(All Players(Team 2), Null);
+		Wait(0.100, Ignore Condition);
+		Create HUD Text(All Players(All Teams), String("Delivered", Null, Null, Null), Null, Null, Top, 0, White, White, White,
+			Visible To and String);
+		Set Team Score(Team 1, 50);
 	}
 }
 
@@ -1426,6 +1837,14 @@ rule("=========================================== Phase 4 - Primal Winston =====
 	actions
 	{
 		Destroy All Effects;
+		Set Global Variable(U, 0);
+		Set Damage Received(All Players(Team 2), 100);
+		Set Player Variable(All Players(Team 2), P, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Modify Player Variable(All Players(Team 2), P, Append To Array, False);
+		Modify Player Variable(All Players(Team 2), P, Append To Array, False);
+		Modify Player Variable(All Players(Team 2), P, Append To Array, False);
+		Modify Player Variable(All Players(Team 2), P, Append To Array, False);
 		Destroy HUD Text(Player Variable(All Players(Team 2), G));
 		Stop All Heal Over Time(All Players(Team 2));
 		Destroy All In-World Text;
@@ -1436,18 +1855,25 @@ rule("=========================================== Phase 4 - Primal Winston =====
 		Play Effect(All Players(All Teams), Good Explosion, Red, Position Of(Event Player), 50);
 		Play Effect(All Players(All Teams), Explosion Sound, Red, Position Of(Event Player), 200);
 		Create Effect(All Players(Team 2), Bad Aura, Red, Event Player, 3.300, Visible To Position and Radius);
-		Wait(3, Ignore Condition);
+		Wait(1, Ignore Condition);
 		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Ultimate Ability", Null, Null, Null), String("{0}%",
 			Global Variable(U), Null, Null), Null), Null, Null, Top, 10, Red, White, White, Visible To and String);
 		Modify Global Variable(C, Append To Array, Last Text ID);
 		Set Player Variable(Event Player, I, Last Text ID);
-		Set Player Variable(Event Player, X, True);
 		Destroy HUD Text(Player Variable(All Players(Team 2), G));
 		Destroy HUD Text(Player Variable(All Players(Team 2), V));
+		Create HUD Text(Event Player, String("{0} {1}", String("Threat", Null, Null, Null), String("{0}: {1}", String("Ability", Null,
+			Null, Null), Player Variable(Event Player, K), Null), Null), Null, Null, Right, 1, White, White, White, Visible To and String);
+		Modify Global Variable(C, Append To Array, Last Text ID);
+		Create HUD Text(Event Player, String("{0} {1}", String("Sphere", Null, Null, Null), String("{0}: {1}", String("Ability", Null,
+			Null, Null), Player Variable(Event Player, B), Null), Null), Null, Null, Right, 2, White, White, White, Visible To and String);
+		Modify Global Variable(C, Append To Array, Last Text ID);
+		Skip If(Compare(Team Score(Team 1), <=, 20), 1);
+		Set Team Score(Team 1, 20);
 	}
 }
 
-rule("winston ult check")
+rule("winston regular ult check")
 {
 	event
 	{
@@ -1458,7 +1884,7 @@ rule("winston ult check")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Winston), Team 1) == True;
+		Hero Of(Global Variable(W)) == Hero(Winston);
 		Is Using Ultimate(Event Player) != True;
 	}
 
@@ -1470,8 +1896,6 @@ rule("winston ult check")
 		Wait(0.250, Ignore Condition);
 		Set Ultimate Ability Enabled(Event Player, True);
 		Set Ability 2 Enabled(Event Player, True);
-		Wait(0.250, Ignore Condition);
-		Press Button(Event Player, Ability 2);
 	}
 }
 
@@ -1486,7 +1910,7 @@ rule("winston jump - initial")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Winston), Team 1) == True;
+		Hero Of(Global Variable(W)) == Hero(Winston);
 		Is Using Ability 1(Event Player) == True;
 		Player Variable(Event Player, C) != True;
 	}
@@ -1494,7 +1918,8 @@ rule("winston jump - initial")
 	actions
 	{
 		Start Holding Button(Event Player, Ability 1);
-		Set Status(Players Within Radius(Event Player, 2.500, Team 2, Surfaces And All Barriers), Event Player, Knocked Down, 0.800);
+		Set Status(Filtered Array(Players Within Radius(Event Player, 2.500, Team 2, Off), Compare(Player Variable(Current Array Element,
+			S), !=, True)), Event Player, Knocked Down, 0.800);
 		Wait(0.149, Ignore Condition);
 		Stop Holding Button(Event Player, Ability 1);
 		Set Player Variable(Event Player, C, True);
@@ -1512,7 +1937,7 @@ rule("winston jump - landing")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Winston), Team 1) == True;
+		Hero Of(Global Variable(W)) == Hero(Winston);
 		Player Variable(Event Player, C) == True;
 		Is In Air(Event Player) != True;
 	}
@@ -1520,15 +1945,16 @@ rule("winston jump - landing")
 	actions
 	{
 		Set Player Variable(Event Player, C, False);
-		Set Player Variable(Event Player, P, Players Within Radius(Event Player, 5, Team 2, Off));
-		Set Status(Players Within Radius(Event Player, 6, Team 2, Off), Event Player, Knocked Down, 1.500);
-		Set Healing Received(Players Within Radius(Event Player, 6, Team 2, Off), 40);
+		Set Player Variable(Event Player, P, Filtered Array(Players Within Radius(Event Player, 6, Team 2, Off), Compare(Player Variable(
+			Current Array Element, S), !=, True)));
+		Set Status(Player Variable(Event Player, P), Event Player, Knocked Down, 1.600);
+		Set Healing Received(Player Variable(Event Player, P), 40);
 		Wait(2, Ignore Condition);
 		Set Healing Received(Player Variable(Event Player, P), 100);
 	}
 }
 
-rule("second ult - intiate")
+rule("winston second ult - intiate")
 {
 	event
 	{
@@ -1539,24 +1965,114 @@ rule("second ult - intiate")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Winston), Team 1) == True;
-		Global Variable(D) == True;
-		Player Variable(Event Player, X) == True;
+		Hero Of(Global Variable(W)) == Hero(Winston);
 		Global Variable(U) < 100;
 	}
 
 	actions
 	{
-		Modify Global Variable(U, Add, Round To Integer(1, Down));
-		Wait(0.250, Ignore Condition);
+		Modify Global Variable(U, Add, 1);
+		Wait(0.800, Ignore Condition);
 		Loop If Condition Is True;
 		Skip If(Compare(Hero Of(Event Player), ==, Hero(Genji)), 2);
-		Set Global Variable(D, False);
 		Set Global Variable(Z, False);
 	}
 }
 
-rule("second ult - activate")
+rule("winston second ult - not over 100%")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Global Variable(U) > 100;
+	}
+
+	actions
+	{
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(U, 100);
+		Skip If(Compare(Hero Of(Global Variable(W)), ==, Hero(Genji)), 2);
+		disabled Set Global Variable(D, False);
+		disabled Set Global Variable(Z, False);
+	}
+}
+
+rule("winston second ult - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Global Variable(U) >= 100;
+		Is Button Held(Event Player, Ultimate) == True;
+		Is Dead(Event Player) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(D, True);
+		Set Player Variable(Event Player, R, 0);
+		Set Global Variable(Z, True);
+		Play Effect(All Players(All Teams), Ring Explosion Sound, Red, Event Player, 200);
+		Play Effect(All Players(All Teams), Ring Explosion, Red, Event Player, 200);
+		Create Effect(All Players(All Teams), Sphere, Red, Position Of(Event Player), Player Variable(Event Player, R),
+			Visible To Position and Radius);
+		Set Global Variable(E, Last Created Entity);
+		Set Ability 1 Enabled(Event Player, False);
+		Set Move Speed(Event Player, 10);
+		Set Status(Event Player, Null, Unkillable, 3);
+		Wait(3, Ignore Condition);
+		Destroy Effect(Global Variable(E));
+		Set Player Variable At Index(Players Within Radius(Event Player, 12, Team 2, Off), P, 0, True);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, Red, Event Player, 10000);
+		Set Ability 1 Enabled(Players On Hero(Hero(Winston), Team 1), True);
+		Set Move Speed(Players On Hero(Hero(Winston), Team 1), 100);
+		Set Global Variable(U, 0);
+		Wait(0.016, Ignore Condition);
+		Skip If(Compare(Hero Of(Global Variable(W)), ==, Hero(Genji)), 1);
+		Set Global Variable(Z, False);
+	}
+}
+
+rule("winston second ult - increase sphere")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Global Variable(Z) == True;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, R, Add, 0.300);
+		Wait(0.096, Ignore Condition);
+		Loop If(Compare(Player Variable(Event Player, R), <, 12));
+		Wait(0.250, Ignore Condition);
+		Set Player Variable(Event Player, R, 0);
+	}
+}
+
+rule("winston second ult - slow")
 {
 	event
 	{
@@ -1567,48 +2083,549 @@ rule("second ult - activate")
 
 	conditions
 	{
-		Is Hero Being Played(Hero(Winston), Team 1) == True;
-		Global Variable(U) >= 100;
-		Global Variable(D) != True;
-		Is Button Held(Players On Hero(Hero(Winston), Team 1), Ultimate) == True;
-		Not(Is Dead(Players On Hero(Hero(Winston), Team 1))) == True;
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Distance Between(Event Player, Global Variable(W)) <= Player Variable(Global Variable(W), R);
+		Global Variable(Z) == True;
 	}
 
 	actions
 	{
-		Set Global Variable(D, True);
-		Set Global Variable(Z, True);
-		Play Effect(All Players(All Teams), Ring Explosion Sound, Red, Position Of(Event Player), 200);
-		Play Effect(All Players(All Teams), Ring Explosion, Red, Position Of(Event Player), 200);
-		Set Ability 1 Enabled(Players On Hero(Hero(Winston), Team 1), False);
-		Set Move Speed(Players On Hero(Hero(Winston), Team 1), 10);
-		Heal(Event Player, Null, Max Health(Event Player));
-		Set Status(Event Player, Null, Hacked, 15);
-		Set Status(Event Player, Null, Unkillable, 5);
-		Set Healing Received(Event Player, 0);
+		Set Move Speed(Event Player, 20);
+		Set Status(Event Player, Null, Hacked, 3);
+		Wait(3, Ignore Condition);
+		Set Move Speed(Event Player, 100);
+	}
+}
+
+rule("winston second ult - detection")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Player Variable(Event Player, P), 0) == True;
+	}
+
+	actions
+	{
+		Heal(Event Player, Null, 9999);
+		Wait(0.032, Ignore Condition);
+		Damage(Event Player, Global Variable(W), Multiply(Max Health(Event Player), 0.220));
+		Set Player Variable At Index(Event Player, P, 0, False);
+		Wait(4, Ignore Condition);
+		Skip If(Compare(Player Variable(Event Player, S), ==, True), 1);
+		Set Move Speed(Event Player, 100);
+	}
+}
+
+rule("winston roar - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Is Button Held(Event Player, Secondary Fire) == True;
+		Player Variable(Event Player, K) == 0;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, K, 12);
+		Set Player Variable(Event Player, X, 15);
+		Create Effect(All Players(All Teams), Sphere, Red, Eye Position(Event Player), Player Variable(Event Player, X),
+			Visible To Position and Radius);
+		Set Player Variable(Event Player, N, Last Created Entity);
+		Set Move Speed(Event Player, 60);
+		Wait(1.500, Ignore Condition);
+		Set Player Variable At Index(Filtered Array(All Players(Team 2), And(Compare(Distance Between(Current Array Element, Event Player),
+			<=, 7), Compare(Player Variable(Current Array Element, S), !=, True))), P, 1, True);
+		Set Player Variable At Index(Filtered Array(All Players(Team 2), And(Compare(Distance Between(Current Array Element, Event Player),
+			<=, 20), And(Compare(Distance Between(Current Array Element, Event Player), >, 7), Compare(Player Variable(
+			Current Array Element, S), !=, True)))), P, 2, True);
+		Play Effect(All Players(All Teams), Bad Explosion, Red, Event Player, 7);
+		Play Effect(All Players(All Teams), Ring Explosion, Red, Event Player, 7);
+		Play Effect(All Players(All Teams), Ring Explosion, Yellow, Eye Position(Event Player), 20);
+		Play Effect(All Players(All Teams), Bad Pickup Effect, Yellow, Event Player, 20);
+		Play Effect(All Players(All Teams), Good Pickup Effect, Yellow, Event Player, 20);
+		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 200);
+		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 200);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Event Player, 200);
+		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 200);
+		Play Effect(All Players(All Teams), Explosion Sound, White, Event Player, 200);
+		Set Move Speed(Event Player, 100);
+		Destroy Effect(Player Variable(Event Player, N));
+	}
+}
+
+rule("winston roar - decrease sphere")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Player Variable(Event Player, X) == 15;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, X, Subtract, 1);
+		Wait(0.096, Ignore Condition);
+		Loop If(Compare(Player Variable(Event Player, X), >, 0));
 		Wait(0.250, Ignore Condition);
-		Damage(Event Player, Players On Hero(Hero(Winston), Team 1), Subtract(Max Health(Event Player), 1));
-		Create HUD Text(Event Player, String("Safe", Null, Null, Null), Null, Null, Left, 100, Purple, Blue, White, Visible To and String);
-		Set Player Variable(Event Player, E, Last Text ID);
-		Wait(5, Ignore Condition);
-		Destroy HUD Text(Player Variable(Event Player, E));
-		Create HUD Text(Event Player, String("Sudden Death", Null, Null, Null), Null, Null, Left, 100, Red, White, White,
+		Set Player Variable(Event Player, X, 0);
+	}
+}
+
+rule("winston roar- detection - close 1")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Player Variable(Event Player, P), 1) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(U, Add, 5);
+		Set Status(Event Player, Global Variable(W), Rooted, 4);
+		Set Damage Received(Event Player, 200);
+		Wait(4, Ignore Condition);
+		Set Damage Received(Event Player, 100);
+		Set Player Variable At Index(Event Player, P, 1, False);
+	}
+}
+
+rule("winston roar- detection - close 2")
+{
+	event
+	{
+		Player took damage;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Player Variable(Event Player, P), 1) == True;
+		Attacker == Global Variable(W);
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Eye Position(Event Player), Position Of(Global Variable(W))), 4.750, To World,
+			Cancel Contrary Motion);
+	}
+}
+
+rule("winston roar- detection - far")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Player Variable(Event Player, P), 2) == True;
+	}
+
+	actions
+	{
+		Modify Global Variable(U, Add, 2);
+		Set Move Speed(Event Player, 60);
+		Set Damage Received(Event Player, 150);
+		Wait(4, Ignore Condition);
+		Set Damage Received(Event Player, 100);
+		Set Move Speed(Event Player, 100);
+		Set Player Variable At Index(Event Player, P, 2, False);
+	}
+}
+
+rule("winston roar- detection - bubble out knockback")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Or(Value In Array(Player Variable(Event Player, P), 1), Value In Array(Player Variable(Event Player, P), 2)) == True;
+		Count Of(Global Variable(F)) >= 6;
+		Value In Array(Global Variable(F), 4) == 1;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Add(Direction Towards(Position Of(Global Variable(W)), Eye Position(Event Player)), Vector(0, 0.400,
+			0)), 35, To World, Cancel Contrary Motion);
+	}
+}
+
+rule("winston roar - cd")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Player Variable(Event Player, K) == 12;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Modify Player Variable(Event Player, K, Subtract, 1);
+		Loop If(Compare(Player Variable(Event Player, K), >, 0));
+		Set Player Variable(Event Player, K, 0);
+	}
+}
+
+rule("winston kill ult charge")
+{
+	event
+	{
+		Player dealt final blow;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Global Variable(U) < 100;
+	}
+
+	actions
+	{
+		Modify Global Variable(U, Add, 7);
+	}
+}
+
+rule("winston negative bubble - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Is Button Held(Event Player, Ability 2) == True;
+		Global Variable(F) == Empty Array;
+		Player Variable(Event Player, B) == 0;
+	}
+
+	actions
+	{
+		Wait(0.016, Ignore Condition);
+		Abort If Condition Is False;
+		Modify Global Variable(F, Append To Array, Eye Position(Event Player));
+		Modify Global Variable(F, Append To Array, 0.250);
+		Modify Global Variable(F, Append To Array, 6);
+		Create Effect(All Players(All Teams), Sphere, Red, Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2),
+			Visible To Position and Radius);
+		Modify Global Variable(F, Append To Array, Last Created Entity);
+		Modify Global Variable(F, Append To Array, 0);
+		Wait(0.016, Ignore Condition);
+		Modify Global Variable(F, Append To Array, Ray Cast Hit Position(Value In Array(Global Variable(F), 0), Add(Value In Array(
+			Global Variable(F), 0), Multiply(Down, 150)), Null, Event Player, False));
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), String("{0} {1} {2}", String("Players", Null, Null, Null), String("Inside", Null, Null,
+			Null), String("{0}: {1}", String("Sphere", Null, Null, Null), String("{0} / {1}", Count Of(Players Within Radius(
+			Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2), Team 2, Off)), Round To Integer(Multiply(
+			Number of Players(Team 2), 0.500), Up), Null), Null)), Null, String("{0} {1}", String("Sphere", Null, Null, Null), String(
+			"{0}: {1}", String("Time", Null, Null, Null), Player Variable(Event Player, G), Null), Null), Top, 50, Red, White, White,
 			Visible To and String);
-		Set Player Variable(Event Player, E, Last Text ID);
-		Set Ability 1 Enabled(Players On Hero(Hero(Winston), Team 1), True);
-		Set Move Speed(Players On Hero(Hero(Winston), Team 1), 100);
-		Wait(10, Ignore Condition);
-		Set Healing Received(Event Player, 100);
-		Destroy HUD Text(Player Variable(Event Player, E));
-		Set Player Variable(Event Player, E, Null);
-		Destroy HUD Text(Player Variable(Players On Hero(Hero(Winston), Team 1), I));
-		Set Global Variable(U, 0);
-		Skip If(Compare(Hero Of(Global Variable(W)), !=, Hero(Winston)), 4);
-		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Ultimate Ability", Null, Null, Null), String("{0}%",
-			Global Variable(U), Null, Null), Null), Null, Null, Top, 10, Red, White, White, Visible To and String);
-		Modify Global Variable(C, Append To Array, Last Text ID);
-		Set Player Variable(Players On Hero(Hero(Winston), Team 1), I, Last Text ID);
-		Set Global Variable(Z, False);
+		Modify Global Variable(F, Append To Array, Last Text ID);
+	}
+}
+
+rule("winston negative bubble - gravity")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Count Of(Global Variable(F)) >= 6;
+	}
+
+	actions
+	{
+		Wait(0.016, Ignore Condition);
+		Set Global Variable At Index(F, 0, Ray Cast Hit Position(Value In Array(Global Variable(F), 0), Add(Value In Array(Global Variable(
+			F), 0), Multiply(Down, Value In Array(Global Variable(F), 1))), Null, Event Player, False));
+		Wait(0.016, Ignore Condition);
+		Loop If(And(Compare(Y Component Of(Value In Array(Global Variable(F), 0)), !=, Y Component Of(Value In Array(Global Variable(F),
+			5))), Compare(Distance Between(Position Of(Global Variable(W)), Value In Array(Global Variable(F), 0)), <=, 30)));
+		Set Global Variable At Index(F, 4, 1);
+		Set Player Variable(Event Player, B, 30);
+		Set Player Variable(Event Player, G, 15);
+	}
+}
+
+rule("winston negative bubble - detecting")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Count Of(Global Variable(F)) >= 6;
+		Value In Array(Global Variable(F), 4) == 1;
+		Count Of(Players Within Radius(Value In Array(Global Variable(F), 0), Value In Array(Global Variable(F), 2), Team 2, Off))
+			>= Multiply(Number of Players(Team 2), 0.500);
+	}
+
+	actions
+	{
+		Wait(2, Abort When False);
+		Abort If Condition Is False;
+		Set Global Variable At Index(F, 4, 2);
+	}
+}
+
+rule("winston negative bubble - timeout")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Global Variable(F), 4) == 1;
+	}
+
+	actions
+	{
+		Wait(15, Abort When False);
+		Abort If Condition Is False;
+		Set Global Variable At Index(F, 4, 3);
+	}
+}
+
+rule("winston negative bubble - too far check")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Count Of(Global Variable(F)) >= 6;
+		Or(Compare(Distance Between(Event Player, Value In Array(Global Variable(F), 0)), >, 30), Compare(Count Of(Players Within Radius(
+			Value In Array(Global Variable(F), 0), 42, Team 2, Off)), ==, 0)) == True;
+		Value In Array(Global Variable(F), 4) <= 1;
+	}
+
+	actions
+	{
+		Play Effect(All Players(All Teams), Good Explosion, White, Value In Array(Global Variable(F), 0), 12);
+		Play Effect(All Players(All Teams), Explosion Sound, White, Value In Array(Global Variable(F), 0), 200);
+		Wait(0.080, Ignore Condition);
+		Destroy Effect(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 6));
+		Wait(0.080, Ignore Condition);
+		Set Global Variable(F, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, G, 0);
+	}
+}
+
+rule("winston negative bubble - attackers won")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Global Variable(F), 4) == 2;
+	}
+
+	actions
+	{
+		Play Effect(All Players(All Teams), Good Explosion, Blue, Value In Array(Global Variable(F), 0), 12);
+		Play Effect(All Players(All Teams), Ring Explosion Sound, White, Value In Array(Global Variable(F), 0), 200);
+		Modify Global Variable(U, Subtract, Multiply(0.500, Global Variable(U)));
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, G, 0);
+		Destroy Effect(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 6));
+		Set Move Speed(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 150);
+		Set Damage Dealt(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 150);
+		Set Damage Received(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 50);
+		Set Move Speed(Global Variable(W), 50);
+		Set Damage Dealt(Global Variable(W), 50);
+		Set Damage Received(Global Variable(W), 150);
+		Wait(5, Ignore Condition);
+		Set Move Speed(Global Variable(W), 100);
+		Set Damage Dealt(Global Variable(W), 100);
+		Set Damage Received(Global Variable(W), 100);
+		Wait(2, Ignore Condition);
+		Set Move Speed(All Players(Team 2), 100);
+		Set Damage Dealt(All Players(Team 2), 100);
+		Set Damage Received(All Players(Team 2), 100);
+		Wait(0.064, Ignore Condition);
+		Set Global Variable(F, Empty Array);
+	}
+}
+
+rule("winston negative bubble - winston won")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Value In Array(Global Variable(F), 4) == 3;
+	}
+
+	actions
+	{
+		Play Effect(All Players(All Teams), Good Explosion, Red, Value In Array(Global Variable(F), 0), 12);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Value In Array(Global Variable(F), 0), 200);
+		Modify Global Variable(U, Add, 20);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, G, 0);
+		Set Healing Received(Global Variable(W), 100);
+		Wait(0.016, Ignore Condition);
+		Heal(Global Variable(W), Null, Multiply(20, 1000));
+		Destroy Effect(Value In Array(Global Variable(F), 3));
+		Destroy HUD Text(Value In Array(Global Variable(F), 6));
+		Set Move Speed(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 50);
+		Set Damage Dealt(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 50);
+		Set Damage Received(Players Within Radius(Value In Array(Global Variable(F), 0), 12, Team 2, Off), 200);
+		Set Move Speed(Global Variable(W), 200);
+		Set Damage Dealt(Global Variable(W), 200);
+		Set Damage Received(Global Variable(W), 25);
+		Wait(5, Ignore Condition);
+		Set Move Speed(All Players(Team 2), 100);
+		Set Damage Dealt(All Players(Team 2), 100);
+		Set Damage Received(All Players(Team 2), 100);
+		Wait(5, Ignore Condition);
+		Set Move Speed(Global Variable(W), 100);
+		Set Damage Dealt(Global Variable(W), 100);
+		Set Damage Received(Global Variable(W), 100);
+		Wait(0.064, Ignore Condition);
+		Set Global Variable(F, Empty Array);
+	}
+}
+
+rule("winston negative bubble - cd")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Player Variable(Event Player, B) == 30;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Modify Player Variable(Event Player, B, Subtract, 1);
+		Loop If(Compare(Player Variable(Event Player, B), >, 0));
+		Skip If(Compare(Hero Of(Event Player), ==, Hero(Genji)), 2);
+		Set Player Variable(Event Player, B, 0);
+	}
+}
+
+rule("winston negative bubble - count down")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Hero Of(Global Variable(W)) == Hero(Winston);
+		Player Variable(Event Player, G) == 15;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, G, Subtract, 1);
+		Wait(1, Ignore Condition);
+		Loop If(Compare(Player Variable(Event Player, G), >, 0));
+		Set Player Variable(Event Player, G, 0);
 	}
 }
 
@@ -1624,57 +2641,76 @@ rule("=========================================== Phase 5 - Genji ??? ==========
 	conditions
 	{
 		Value In Array(Global Variable(B), 0) == 4;
-		Normalized Health(Event Player) <= 0.050;
+		Normalized Health(Event Player) <= 0.035;
 	}
 
 	actions
 	{
 		Destroy All Effects;
-		Set Damage Received(Event Player, 23);
-		Set Move Speed(Event Player, 100);
-		Set Ability 1 Enabled(Event Player, True);
-		Destroy HUD Text(Player Variable(All Players(Team 2), G));
-		Stop All Heal Over Time(All Players(Team 2));
 		Destroy All In-World Text;
+		Wait(0.032, Ignore Condition);
+		Destroy HUD Text(Value In Array(Global Variable(F), 6));
+		Wait(0.032, Ignore Condition);
+		Disallow Button(Event Player, Secondary Fire);
+		Disallow Button(Event Player, Ability 1);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, G, 0);
+		Set Player Variable(Event Player, K, 0);
+		Set Player Variable(Global Variable(W), J, 0);
+		Set Damage Received(Event Player, 45);
+		Wait(0.016, Ignore Condition);
+		Set Move Speed(Event Player, 100);
+		Wait(0.016, Ignore Condition);
+		Set Ability 1 Enabled(Event Player, True);
+		Wait(0.016, Ignore Condition);
+		Destroy HUD Text(Player Variable(All Players(Team 2), G));
 		Start Forcing Player To Be Hero(Event Player, Hero(Genji));
+		Wait(0.016, Ignore Condition);
+		Stop All Heal Over Time(All Players(Team 2));
 		Play Effect(All Players(All Teams), Bad Explosion, White, Position Of(Event Player), 20);
 		Stop Forcing Player To Be Hero(Event Player);
-		Wait(1.500, Ignore Condition);
+		Wait(2.200, Ignore Condition);
+		Allow Button(Event Player, Secondary Fire);
+		Allow Button(Event Player, Ability 1);
 		Play Effect(All Players(All Teams), Good Explosion, White, Position Of(Event Player), 50);
 		Play Effect(All Players(All Teams), Explosion Sound, White, Position Of(Event Player), 200);
 		Create Effect(All Players(Team 2), Bad Aura, White, Event Player, 1.600, Visible To Position and Radius);
 		Destroy HUD Text(Player Variable(All Players(Team 2), G));
 		Destroy HUD Text(Player Variable(All Players(Team 2), V));
+		Wait(0.032, Ignore Condition);
 		Create HUD Text(Event Player, String("{0} {1}", String("Hidden", Null, Null, Null), String("{0}: {1}", String("Ability", Null,
 			Null, Null), Player Variable(Event Player, K), Null), Null), Null, String("{0}: {1}", String("Hidden", Null, Null, Null),
-			Player Variable(Event Player, J), Null), Right, 1, White, White, White, Visible To and String);
+			Subtract(15, Player Variable(Event Player, J)), Null), Right, 1, White, White, White, Visible To and String);
 		Modify Global Variable(C, Append To Array, Last Text ID);
+		Wait(0.032, Ignore Condition);
 		Create HUD Text(Event Player, String("{0} {1}", String("Down", Null, Null, Null), String("{0}: {1}", String("Ability", Null, Null,
 			Null), Player Variable(Event Player, B), Null), Null), Null, Null, Right, 2, White, White, White, Visible To and String);
 		Modify Global Variable(C, Append To Array, Last Text ID);
+		Set Player Variable(Event Player, B, 0);
 	}
 }
 
-rule("genji ult check")
+rule("genji regular ult check")
 {
 	event
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
 		Is Using Ultimate(Event Player) != True;
 	}
 
 	actions
 	{
-		Press Button(Event Player, Ultimate);
 		Wait(0.250, Ignore Condition);
+		Press Button(Event Player, Ultimate);
 		Loop If Condition Is True;
+		Allow Button(Event Player, Secondary Fire);
+		Allow Button(Event Player, Ability 1);
 	}
 }
 
@@ -1684,13 +2720,12 @@ rule("crouch stealth - activate")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
-		Is Button Held(Event Player, Interact) == True;
+		Is Button Held(Event Player, Secondary Fire) == True;
 		Global Variable(D) == True;
 		Global Variable(F) == Empty Array;
 		Player Variable(Event Player, K) == 0;
@@ -1702,51 +2737,52 @@ rule("crouch stealth - activate")
 	{
 		Destroy All Icons;
 		Destroy All In-World Text;
+		Wait(0.032, Ignore Condition);
 		Set Global Variable(D, False);
 		Set Invisible(Event Player, All);
 		Set Global Variable(E, Eye Position(Event Player));
-		Play Effect(All Players(All Teams), Good Pickup Effect, White, Event Player, 5);
+		Wait(0.032, Ignore Condition);
 		Play Effect(All Players(All Teams), Ring Explosion Sound, White, Event Player, 200);
 		Wait(0.250, Ignore Condition);
-		Create Effect(All Players(All Teams), Cloud, White, Global Variable(E), 18, None);
-		Modify Global Variable(F, Append To Array, Last Created Entity);
 		Set Damage Dealt(Event Player, 500);
 		Set Move Speed(Event Player, 150);
 	}
 }
 
-rule("crouch stealth - generate smoke")
+disabled rule("crouch stealth - generate smoke")
 {
 	event
 	{
-		Ongoing - Global;
+		Ongoing - Each Player;
+		Team 1;
+		Genji;
 	}
 
 	conditions
 	{
 		Global Variable(D) == False;
-		Hero Of(Global Variable(W)) == Hero(Genji);
+		Hero Of(Event Player) == Hero(Ana);
 	}
 
 	actions
 	{
-		Wait(0.080, Ignore Condition);
+		Wait(0.112, Ignore Condition);
 		Modify Global Variable(I, Add, 2);
-		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(Global Variable(I), 0, 0)), 15, None);
+		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(Global Variable(I), 0, 0)), 7, None);
 		Modify Global Variable(F, Append To Array, Last Created Entity);
-		Wait(0.080, Ignore Condition);
-		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(0, 0, Global Variable(I))), 15, None);
+		Wait(0.112, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(0, 0, Global Variable(I))), 7, None);
 		Modify Global Variable(F, Append To Array, Last Created Entity);
-		Wait(0.080, Ignore Condition);
-		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(Multiply(-1.000, Global Variable(I)), 0, 0)),
-			15, None);
+		Wait(0.112, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(Multiply(-1.000, Global Variable(I)), 0, 0)), 7,
+			None);
 		Modify Global Variable(F, Append To Array, Last Created Entity);
-		Wait(0.080, Ignore Condition);
-		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(0, 0, Multiply(-1.000, Global Variable(I)))),
-			15, None);
+		Wait(0.112, Ignore Condition);
+		Create Effect(All Players(All Teams), Cloud, White, Add(Global Variable(E), Vector(0, 0, Multiply(-1.000, Global Variable(I)))), 7,
+			None);
 		Modify Global Variable(F, Append To Array, Last Created Entity);
-		Wait(0.080, Ignore Condition);
-		Loop If(Compare(Global Variable(I), <=, 4));
+		Wait(0.112, Ignore Condition);
+		Loop If(Compare(Global Variable(I), <=, 2));
 	}
 }
 
@@ -1754,21 +2790,22 @@ rule("crouch stealth - timer")
 {
 	event
 	{
-		Ongoing - Global;
+		Ongoing - Each Player;
+		Team 1;
+		Genji;
 	}
 
 	conditions
 	{
-		Global Variable(D) == False;
 		Hero Of(Global Variable(W)) == Hero(Genji);
+		Global Variable(D) == False;
 	}
 
 	actions
 	{
-		Set Player Variable(Global Variable(W), J, 15);
-		Chase Player Variable At Rate(Global Variable(W), J, 0, 1, Destination and Rate);
-		Wait(15, Ignore Condition);
-		Stop Chasing Player Variable(Global Variable(W), J);
+		Wait(1, Ignore Condition);
+		Modify Player Variable(Global Variable(W), J, Add, 1);
+		Loop If(Compare(And(Compare(Player Variable(Global Variable(W), J), <, 15), Compare(Global Variable(D), ==, False)), ==, True));
 		Skip If(Compare(Global Variable(D), ==, True), 4);
 		Set Invisible(Global Variable(W), None);
 		Set Move Speed(Global Variable(W), 100);
@@ -1783,19 +2820,18 @@ rule("crouch stealth - visual effect")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
 		Global Variable(D) == False;
-		Hero Of(Global Variable(W)) == Hero(Genji);
 	}
 
 	actions
 	{
+		Wait(0.900, Ignore Condition);
 		Play Effect(All Players(All Teams), Ring Explosion, White, Position Of(Event Player), 8);
-		Wait(0.800, Ignore Condition);
 		Loop If Condition Is True;
 	}
 }
@@ -1806,21 +2842,22 @@ rule("crouch stealth - deactivate self")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
 		Or(Is Using Ability 1(Event Player), Or(Is Using Ability 2(Event Player), Is Button Held(Event Player, Primary Fire))) == True;
-		Hero Of(Global Variable(W)) == Hero(Genji);
 		Global Variable(D) == False;
 	}
 
 	actions
 	{
+		Set Global Variable(D, True);
+		Set Player Variable(Event Player, D, 0);
 		Set Invisible(Event Player, None);
 		Set Move Speed(Event Player, 100);
-		Set Global Variable(D, True);
+		Set Player Variable(Global Variable(W), J, 0);
 	}
 }
 
@@ -1830,33 +2867,94 @@ rule("crouch stealth - remove smoke/final removal")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
 		Global Variable(D) == True;
-		Hero Of(Event Player) == Hero(Genji);
-		Global Variable(F) != Empty Array;
+		disabled Global Variable(F) != Empty Array;
+		Player Variable(Event Player, J) == 0;
 	}
 
 	actions
 	{
-		Destroy Effect(Value In Array(Global Variable(F), Global Variable(J)));
-		Wait(0.250, Ignore Condition);
-		Modify Global Variable(J, Add, 1);
-		Loop If(Compare(Count Of(Global Variable(F)), >, Global Variable(J)));
+		disabled Destroy Effect(Value In Array(Global Variable(F), Global Variable(J)));
+		disabled Wait(0.220, Ignore Condition);
+		disabled Modify Global Variable(J, Add, 1);
+		disabled Loop If(Compare(Count Of(Global Variable(F)), >, Global Variable(J)));
+		Set Player Variable(Event Player, D, 0);
 		Set Global Variable(I, 0);
 		Set Global Variable(J, 0);
 		Set Player Variable(Event Player, J, 0);
-		Set Player Variable(Event Player, K, 30);
+		Set Player Variable(Event Player, K, 20);
 		Set Global Variable(F, Empty Array);
-		Chase Player Variable At Rate(Event Player, K, 0, 1, Destination and Rate);
 		Set Damage Dealt(Event Player, 100);
+		Wait(0.032, Ignore Condition);
 		Create In-World Text(All Players(All Teams), String("{0}: {1}", Hero Of(Event Player), String("{0} / {1}", Round To Integer(Health(
 			Event Player), Down), Round To Integer(Max Health(Event Player), Down), Null), Null), Event Player, 3, Do Not Clip,
 			Visible To Position and String);
+		Wait(0.032, Ignore Condition);
 		Create Icon(All Players(All Teams), Event Player, Skull, Visible To and Position, Red, True);
+		Set Invisible(Event Player, None);
+		Set Move Speed(Event Player, 100);
+	}
+}
+
+rule("genji smoke stealth - cd")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Genji;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, K) == 20;
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Modify Player Variable(Event Player, K, Subtract, 1);
+		Loop If(Compare(Player Variable(Event Player, K), >, 0));
+		Set Player Variable(Event Player, K, 0);
+	}
+}
+
+rule("genji stealth - 5 hits")
+{
+	event
+	{
+		Player took damage;
+		Team 1;
+		Genji;
+	}
+
+	conditions
+	{
+		Global Variable(D) != True;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, D, Add, 1);
+		Skip If(Compare(Player Variable(Event Player, D), <=, 8), 18);
+		Set Global Variable(D, True);
+		Set Global Variable(S, True);
+		Set Player Variable(Event Player, J, 0);
+		Wait(0.016, Ignore Condition);
+		Set Invisible(Event Player, None);
+		Set Move Speed(Event Player, 100);
+		Set Global Variable(D, True);
+		Play Effect(All Players(All Teams), Ring Explosion Sound, White, Event Player, 200);
+		Set Status(Event Player, Null, Stunned, 3);
+		Set Damage Dealt(Event Player, 100);
+		Wait(3.100, Ignore Condition);
+		Set Global Variable(S, False);
+		Set Player Variable(Event Player, D, 0);
 	}
 }
 
@@ -1880,6 +2978,7 @@ rule("teleport deflect - mark")
 	{
 		Skip If(Array Contains(Global Variable(G), Event Player), 1);
 		Modify Global Variable(G, Append To Array, Event Player);
+		Disallow Button(Global Variable(W), Ability 1);
 	}
 }
 
@@ -1889,47 +2988,45 @@ rule("teleport deflect - activate")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
 		Is Using Ability 2(Event Player) == False;
 		Global Variable(G) != Empty Array;
-		Hero Of(Event Player) == Hero(Genji);
 	}
 
 	actions
 	{
 		Wait(0.080, Ignore Condition);
-		Skip If(Compare(Player Variable(Event Player, M), !=, Null), 5);
+		Skip If(Compare(Player Variable(Event Player, M), !=, Null), 3);
 		Set Player Variable(Event Player, M, Eye Position(Event Player));
-		Set Gravity(Event Player, 0.001);
-		Set Damage Dealt(Event Player, Multiply(10, 1000));
-		Set Global Variable(S, True);
-		Set Status(Event Player, Null, Phased Out, 9999);
+		Wait(0.064, Ignore Condition);
+		Set Status(Event Player, Null, Phased Out, 600);
 		Skip If(Or(Is Dead(Value In Array(Global Variable(G), Player Variable(Event Player, G))), Compare(Player Variable(Value In Array(
-			Global Variable(G), Player Variable(Event Player, G)), S), ==, True)), 7);
+			Global Variable(G), Player Variable(Event Player, G)), S), ==, True)), 8);
+		Set Damage Dealt(Event Player, Multiply(10, 5000));
 		Press Button(Event Player, Primary Fire);
-		Wait(0.080, Ignore Condition);
+		Wait(0.032, Ignore Condition);
 		Set Slow Motion(40);
 		Teleport(Event Player, Add(Position Of(Value In Array(Global Variable(G), Player Variable(Event Player, G))), Multiply(
-			Facing Direction Of(Value In Array(Global Variable(G), Player Variable(Event Player, G))), -1.500)));
-		Wait(1, Ignore Condition);
+			Facing Direction Of(Value In Array(Global Variable(G), Player Variable(Event Player, G))), -0.900)));
+		Wait(0.910, Ignore Condition);
 		Set Slow Motion(100);
 		Skip If(Compare(Is Dead(Value In Array(Global Variable(G), Player Variable(Event Player, G))), ==, False), 1);
 		Modify Player Variable(Event Player, G, Add, 1);
+		Wait(0.016, Ignore Condition);
 		Loop If(Compare(Count Of(Global Variable(G)), >, Player Variable(Event Player, G)));
 		Set Player Variable(Event Player, G, 0);
 		Set Global Variable(G, Empty Array);
 		Set Damage Dealt(Event Player, 100);
 		Teleport(Event Player, Player Variable(Event Player, M));
+		Allow Button(Event Player, Ability 1);
 		Wait(0.250, Ignore Condition);
 		Stop Facing(Event Player);
 		Set Player Variable(Event Player, M, Null);
 		Clear Status(Event Player, Phased Out);
-		Set Gravity(Event Player, 100);
-		Set Global Variable(S, False);
 	}
 }
 
@@ -1939,13 +3036,12 @@ rule("no damage deflect")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
-		Is Using Ability 2(Global Variable(W)) == True;
+		Is Using Ability 2(Event Player) == True;
 	}
 
 	actions
@@ -1963,20 +3059,25 @@ rule("genji aimbot for deflect")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
 		Is Using Ability 2(Event Player) == False;
 		Global Variable(G) != Empty Array;
-		Hero Of(Event Player) == Hero(Genji);
 	}
 
 	actions
 	{
-		Start Facing(Event Player, Direction Towards(Eye Position(Event Player), Value In Array(Global Variable(G), Player Variable(
-			Event Player, G))), 100, To World, Direction and Turn Rate);
+		Set Facing(Event Player, Direction Towards(Add(Eye Position(Value In Array(Global Variable(G), Player Variable(Event Player, G))),
+			Multiply(Facing Direction Of(Value In Array(Global Variable(G), Player Variable(Event Player, G))), -0.900)), Eye Position(
+			Value In Array(Global Variable(G), Player Variable(Event Player, G)))), To World);
+		Wait(0.128, Ignore Condition);
+		Loop If Condition Is True;
+		disabled Start Facing(Event Player, Direction Towards(Add(Eye Position(Value In Array(Global Variable(G), Player Variable(Event Player,
+			G))), Multiply(Facing Direction Of(Value In Array(Global Variable(G), Player Variable(Event Player, G))), -0.900)),
+			Eye Position(Value In Array(Global Variable(G), Player Variable(Event Player, G)))), 1080, To World, Direction and Turn Rate);
 	}
 }
 
@@ -1986,12 +3087,11 @@ rule("genji dash ground pound - init activation")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
 		Is Using Ability 1(Event Player) == True;
 		Is In Air(Event Player) == True;
 		Global Variable(D) == True;
@@ -2015,41 +3115,66 @@ rule("genji dash ground pound - activate")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
 		Is Button Held(Event Player, Crouch) == True;
 		Global Variable(D) == True;
 		Player Variable(Event Player, N) == True;
 		Player Variable(Event Player, B) == 0;
+		Altitude Of(Event Player) >= 5;
 	}
 
 	actions
 	{
-		Disallow Button(Event Player, Crouch);
-		Stop Holding Button(Event Player, Crouch);
-		Set Global Variable(N, True);
-		Set Gravity(Event Player, Multiply(10000, 10000));
-		Wait(0.080, Ignore Condition);
+		Wait(0.112, Ignore Condition);
 		Loop If(Is In Air(Event Player));
+		Set Global Variable(N, True);
+		Wait(0.016, Ignore Condition);
+		Play Effect(All Players(All Teams), Bad Explosion, White, Event Player, 15);
+		Wait(0.016, Ignore Condition);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Event Player, 200);
 		Set Damage Dealt(Event Player, Multiply(10, 1000));
+		Wait(0.016, Ignore Condition);
 		Disallow Button(Event Player, Ability 1);
 		Disallow Button(Event Player, Ability 2);
 		Disallow Button(Event Player, Secondary Fire);
-		Set Gravity(Event Player, 100);
-		Set Status(Event Player, Null, Rooted, 9999);
-		Set Status(Players Within Radius(Position Of(Event Player), 2, Team 2, Off), Null, Knocked Down, 9999);
-		Play Effect(All Players(All Teams), Ring Explosion, Red, Position Of(Event Player), 2);
+		Set Status(Event Player, Null, Rooted, 600);
+		Wait(0.016, Ignore Condition);
+		Set Status(Players Within Radius(Position Of(Event Player), 2, Team 2, Off), Null, Knocked Down, 600);
 		Wait(0.128, Ignore Condition);
 		Set Status(Players Within Radius(Position Of(Event Player), 5, Team 2, Off), Null, Knocked Down, 5);
-		Play Effect(All Players(All Teams), Ring Explosion, Yellow, Position Of(Event Player), 5);
+		Set Player Variable(Event Player, N, False);
 		Wait(0.128, Ignore Condition);
 		Play Effect(All Players(All Teams), Ring Explosion, White, Position Of(Event Player), 15);
 		Set Status(Players Within Radius(Position Of(Event Player), 15, Team 2, Off), Null, Knocked Down, 2);
-		Set Player Variable(Event Player, N, False);
+	}
+}
+
+rule("genji dash ground pound - hit down")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Genji;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		Global Variable(D) == True;
+		Player Variable(Event Player, N) == True;
+		Player Variable(Event Player, B) == 0;
+		Altitude Of(Event Player) >= 5;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Position Of(Event Player), Add(Position Of(Event Player), Multiply(Down, 5))), 55,
+			To World, Cancel Contrary Motion);
 	}
 }
 
@@ -2059,12 +3184,11 @@ rule("genji dash ground pound - release")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
 		Is Button Held(Event Player, Primary Fire) == True;
 		Global Variable(D) == True;
 		Global Variable(N) == True;
@@ -2072,7 +3196,7 @@ rule("genji dash ground pound - release")
 
 	actions
 	{
-		Clear Status(Players Within Radius(Position Of(Event Player), 10, Team 2, Off), Knocked Down);
+		Clear Status(Players Within Radius(Position Of(Event Player), 15, Team 2, Off), Knocked Down);
 		Set Status(Players Within Radius(Position Of(Event Player), 2, Team 2, Off), Null, Knocked Down, 1.500);
 		Play Effect(All Players(All Teams), Bad Pickup Effect, White, Event Player, 200);
 		Wait(1, Ignore Condition);
@@ -2081,10 +3205,8 @@ rule("genji dash ground pound - release")
 		Wait(1, Ignore Condition);
 		Allow Button(Event Player, Ability 1);
 		Allow Button(Event Player, Ability 2);
-		Allow Button(Event Player, Secondary Fire);
-		Allow Button(Event Player, Crouch);
 		Set Global Variable(N, False);
-		Set Player Variable(Event Player, B, 30);
+		Set Player Variable(Event Player, B, 20);
 	}
 }
 
@@ -2094,25 +3216,57 @@ rule("genji dash ground pound - cooldown")
 	{
 		Ongoing - Each Player;
 		Team 1;
-		All;
+		Genji;
 	}
 
 	conditions
 	{
-		Hero Of(Event Player) == Hero(Genji);
-		Player Variable(Event Player, B) == 30;
+		Player Variable(Event Player, B) == 20;
 	}
 
 	actions
 	{
-		Chase Player Variable At Rate(Event Player, B, 0, 1, Destination and Rate);
+		Skip If(Compare(Player Variable(Event Player, D), ==, 0), 1);
+		Set Player Variable(Event Player, D, 0);
+		Wait(1, Ignore Condition);
+		Modify Player Variable(Event Player, B, Subtract, 1);
+		Loop If(Compare(Player Variable(Event Player, B), >, 0));
+		Set Player Variable(Event Player, B, 0);
 	}
 }
 
-rule("=========================================== Attacker Extra Abilities(will get to once this mode doesnt crash) ==================")
+rule("genji dash ground pound - 5 hits")
 {
 	event
 	{
-		Ongoing - Global;
+		Player took damage;
+		Team 1;
+		Genji;
+	}
+
+	conditions
+	{
+		Global Variable(N) == True;
+	}
+
+	actions
+	{
+		Modify Player Variable(Event Player, D, Add, 1);
+		Skip If(Compare(Player Variable(Event Player, D), <=, 9), 18);
+		Set Global Variable(N, False);
+		Set Player Variable(Event Player, B, 20);
+		Set Global Variable(S, True);
+		Wait(0.016, Ignore Condition);
+		Clear Status(Players Within Radius(Position Of(Event Player), 12, Team 2, Off), Knocked Down);
+		Clear Status(Event Player, Rooted);
+		Wait(0.016, Ignore Condition);
+		Play Effect(All Players(All Teams), Ring Explosion Sound, White, Event Player, 200);
+		Set Status(Event Player, Null, Stunned, 3);
+		Set Damage Dealt(Event Player, 100);
+		Allow Button(Event Player, Ability 1);
+		Allow Button(Event Player, Ability 2);
+		Wait(3.100, Ignore Condition);
+		Set Global Variable(S, False);
+		Set Player Variable(Event Player, D, 0);
 	}
 }
