@@ -1,0 +1,1932 @@
+variables
+{
+	global:
+		0: init_vars
+		1: boss_phase_and_hero
+		2: boss_main_hud
+		3: genji_not_using_stealth_or_pound
+		4: single_ent_storage
+		5: boss_effects_storage
+		6: sigma_planettoss_effects
+		7: sigma_shift_used
+		18: boss_enrage
+		19: boss_enrage_hud
+		20: second_ult_charge
+		22: boss_reference
+		25: disable_trinket
+		26: sigma_blackhole_iterator
+		27: sigma_blackhole_array
+		28: sigma_timerift_ent
+		29: sigma_timerift_pos
+		30: sigma_blackhole_start
+		32: sigma_planettoss_used
+		33: sigma_time_stop_area_used
+		34: sigma_positive_polarity_players
+		35: bot_storage
+		37: sigma_blackhole_radius
+		38: sigma_blackhole_hp_diff
+		39: sigma_planettoss_position
+		40: sigma_HP_time_storage
+		41: sigma_negative_polarity_players
+		42: sigma_timerift_activated
+		43: roadhog_using_2nd_ult
+		44: sigma_timerift_radius
+		45: sigma_timestop_radius
+		46: genji_eye_position
+		48: single_hud_storage
+		50: roadhog_2nd_ult_chase_var
+		51: winston_roar_cd
+		52: winston_roar_size
+		53: rein_shield_hud_storage
+		54: winston_2nd_ult_chase_var
+		55: winston_roar_ent_storage
+		56: orisa_fort_ent_storage
+		57: finised_resetting_vars
+		58: started_next_phase
+		59: sigma_discharge_targets
+		60: sigma_black_hole_pos
+		63: boss_hud_iterator
+		65: universal_loop_var
+		66: allow_universal_loop
+		67: universal_loop_arr
+		68: universal_var_check
+		69: sigma_HP_copy
+		70: sigma_timerift_ult_charge
+		71: sigma_polarity
+		72: sigma_timestop_CD
+		73: sigma_polarity_CD
+		74: sigma_planettoss_CD
+		75: sigma_polarity_orbs_path
+		76: sigma_polarity_orbs_normal
+		77: sigma_polarity_orbs_location
+		78: sigma_polarity_orbs_used
+		79: sigma_polarity_orbs_length_cur
+		80: sigma_polarity_orbs_length_max
+		81: sigma_polarity_orbs_facing
+		82: sigma_polarity_orbs_RC_pos
+		83: sigma_polarity_orbs_travel_var
+		84: sigma_polarity_orbs_reflect
+		85: sigma_polarity_orbs_ent
+
+	player:
+		7: is_time_stopped
+		16: time_stop_position
+		18: is_using_trinket
+		23: trinket_cd
+		25: trinket_available
+		26: is_shattered
+		27: attacker_sig_using_ult
+		29: attacker_time_pos
+		30: attacker_time_facing
+		31: recording_time
+		32: time_rewinding
+		33: time_arr_copy
+		34: time_pos_copy
+		35: time_facing_copy
+		36: time_rewind_iterator
+		37: time_pos_length
+		38: polarity_storage
+		39: polarity_inworld_ent
+		40: polarity_push_target
+		41: polarity_pull_target
+		42: timerift_loop_iterator
+		43: discharge_target
+		44: discharge_target_stacks
+		45: discharge_cooldown
+		46: current_damage_dealt
+		47: previous_damage_dealt
+		48: current_move
+		49: previous_move
+		50: current_hp
+		51: previous_hp
+		52: current_damage_taken
+		53: previous_damage_taken
+}
+
+rule("=============================================================== debug heal right click(turn off in real game)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Secondary Fire) == True;
+		disabled Hero Of(Event Player) == Hero(Doomfist);
+		Is Button Held(Event Player, Crouch) == True;
+	}
+
+	actions
+	{
+		disabled Heal(Event Player, Event Player, 4000);
+		disabled Wait(0.250, Ignore Condition);
+		disabled Loop If Condition Is True;
+		Destroy Dummy Bot(Team 2, Slot Of(Value In Array(Global Variable(bot_storage), Subtract(Count Of(Global Variable(bot_storage)),
+			1))));
+		Modify Global Variable(bot_storage, Remove From Array By Index, Subtract(Count Of(Global Variable(bot_storage)), 1));
+	}
+}
+
+rule("=============================================================== debug damage left click(turn off in real game)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		disabled Hero Of(Event Player) == Hero(Doomfist);
+		Is Button Held(Event Player, Interact) == True;
+	}
+
+	actions
+	{
+		disabled Damage(Event Player, Null, 4900);
+		disabled Wait(0.250, Ignore Condition);
+		disabled Loop If Condition Is True;
+		Create Dummy Bot(Hero(Bastion), Team 2, Add(Number of Players(Team 2), 1), Position Of(Global Variable(boss_reference)),
+			Facing Direction Of(Global Variable(boss_reference)));
+		Modify Global Variable(bot_storage, Append To Array, Last Created Entity);
+		Wait(1, Ignore Condition);
+		Press Button(Value In Array(Global Variable(bot_storage), Subtract(Count Of(Global Variable(bot_storage)), 1)), Ability 1);
+		Wait(0.064, Ignore Condition);
+		Start Holding Button(Value In Array(Global Variable(bot_storage), Subtract(Count Of(Global Variable(bot_storage)), 1)),
+			Primary Fire);
+	}
+}
+
+rule("------------------------------------ bot auto aimbot on spawn")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Event Player != Global Variable(boss_reference);
+		Has Spawned(Event Player) == True;
+		Is Dummy Bot(Event Player) == True;
+	}
+
+	actions
+	{
+		Start Facing(Event Player, Direction Towards(Event Player, Global Variable(boss_reference)), 600, To World,
+			Direction and Turn Rate);
+	}
+}
+
+rule("init - boss")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(init_vars) != True;
+	}
+
+	actions
+	{
+		Set Global Variable(init_vars, True);
+		Set Global Variable(sigma_polarity_orbs_travel_var, 0);
+		Set Global Variable(sigma_HP_time_storage, Empty Array);
+		Set Global Variable(universal_loop_var, 0);
+		Set Global Variable(universal_loop_arr, Empty Array);
+		Set Global Variable(boss_phase_and_hero, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Modify Global Variable(boss_phase_and_hero, Append To Array, 0);
+		Wait(0.016, Ignore Condition);
+		Modify Global Variable(boss_phase_and_hero, Append To Array, False);
+		Set Global Variable(boss_main_hud, Empty Array);
+		Set Global Variable(genji_not_using_stealth_or_pound, True);
+		Set Global Variable(single_ent_storage, Null);
+		Set Global Variable(boss_effects_storage, Empty Array);
+		Set Global Variable(sigma_planettoss_effects, Empty Array);
+		Set Global Variable(sigma_shift_used, False);
+		Set Global Variable(I, 0);
+		Set Global Variable(J, 0);
+		Set Global Variable(K, 0);
+		Set Global Variable(boss_enrage, False);
+		Set Global Variable(boss_enrage_hud, Empty Array);
+		Set Global Variable(second_ult_charge, Round To Integer(0, Down));
+		Set Global Variable(boss_reference, Event Player);
+		Set Global Variable(disable_trinket, False);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load", Null, Null, Null), String("{0}%", Server Load,
+			Null, Null), Null), Null, Null, Right, -2.000, White, White, White, Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load Average", Null, Null, Null), String("{0}%",
+			Server Load Average, Null, Null), Null), Null, Null, Right, -1.000, White, White, White, Visible To and String,
+			Default Visibility);
+		Create HUD Text(All Players(All Teams), String("{0}: {1}", String("Server Load Peak", Null, Null, Null), String("{0}%",
+			Server Load Peak, Null, Null), Null), Null, Null, Right, 0, White, White, White, Visible To and String, Default Visibility);
+		Set Global Variable(sigma_blackhole_array, Empty Array);
+		Set Global Variable(sigma_blackhole_start, False);
+		Set Global Variable(sigma_timerift_pos, 0);
+		Set Global Variable(sigma_timerift_ent, Null);
+		Set Global Variable(sigma_planettoss_used, False);
+		Set Global Variable(sigma_time_stop_area_used, False);
+		Set Global Variable(sigma_positive_polarity_players, Empty Array);
+		Set Global Variable(bot_storage, Empty Array);
+		Set Global Variable(sigma_blackhole_radius, 0);
+		Set Global Variable(sigma_blackhole_hp_diff, 15);
+		Set Global Variable(sigma_planettoss_position, 0);
+		Set Global Variable(sigma_HP_time_storage, Empty Array);
+		Set Global Variable(sigma_negative_polarity_players, Empty Array);
+		Set Global Variable(sigma_timerift_activated, False);
+		Set Global Variable(roadhog_using_2nd_ult, False);
+		Set Global Variable(sigma_timerift_radius, 0);
+		Set Global Variable(sigma_timestop_radius, 0);
+		Set Global Variable(genji_eye_position, Null);
+		Set Global Variable(single_hud_storage, Null);
+		Set Global Variable(roadhog_2nd_ult_chase_var, 0);
+		Set Global Variable(winston_roar_cd, 0);
+		Set Global Variable(winston_roar_size, 0);
+		Set Global Variable(rein_shield_hud_storage, Null);
+		Set Global Variable(winston_2nd_ult_chase_var, 0);
+		Set Global Variable(winston_roar_ent_storage, Null);
+		Set Global Variable(orisa_fort_ent_storage, Null);
+		Set Global Variable(finised_resetting_vars, False);
+		Set Global Variable(started_next_phase, False);
+		Set Global Variable(sigma_discharge_targets, Empty Array);
+		Set Global Variable(boss_hud_iterator, 0);
+		Set Global Variable(sigma_black_hole_pos, 0);
+		Set Global Variable(sigma_blackhole_iterator, 0);
+		Set Global Variable(sigma_timerift_ult_charge, 0);
+		Set Global Variable(sigma_timestop_CD, 0);
+		Set Global Variable(sigma_planettoss_CD, 0);
+		Disallow Button(Event Player, Secondary Fire);
+		Set Global Variable(allow_universal_loop, True);
+		Set Global Variable(universal_var_check, 0);
+		Set Global Variable At Index(sigma_HP_time_storage, 15, Null);
+		Wait(0.128, Ignore Condition);
+		Chase Global Variable At Rate(sigma_timestop_radius, 15, 5, None);
+		Set Global Variable(sigma_polarity, True);
+		Set Global Variable(sigma_polarity_CD, 0);
+		Chase Global Variable Over Time(sigma_timerift_radius, 200, 3, None);
+		Set Global Variable(sigma_polarity_orbs_path, 0);
+		Set Global Variable(sigma_polarity_orbs_normal, 0);
+		Set Global Variable(sigma_polarity_orbs_location, 0);
+		Set Global Variable(sigma_polarity_orbs_used, False);
+		Set Global Variable(sigma_polarity_orbs_length_cur, 0);
+		Set Global Variable(sigma_polarity_orbs_length_max, 20);
+		Set Global Variable(sigma_polarity_orbs_facing, 0);
+		Set Global Variable(sigma_polarity_orbs_RC_pos, 0);
+		Chase Global Variable At Rate(sigma_polarity_orbs_travel_var, 20, 50, Destination and Rate);
+		Set Global Variable(sigma_polarity_orbs_reflect, 0);
+		Set Global Variable(sigma_polarity_orbs_ent, Empty Array);
+	}
+}
+
+rule("----init boss health and preload heroes")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Gravity(Event Player, 0.001);
+		Set Max Health(Event Player, Absolute Value(10000));
+		Set Status(Event Player, Null, Unkillable, 9999);
+		Skip If(Compare(Global Variable(boss_reference), !=, Event Player), 4);
+		Set Global Variable(finised_resetting_vars, True);
+		Wait(0.016, Ignore Condition);
+		Set Healing Received(Event Player, 1000);
+		Start Heal Over Time(Event Player, Event Player, 3, 10000);
+		Start Heal Over Time(Event Player, Event Player, 3, 10000);
+		Wait(3, Ignore Condition);
+		Set Healing Received(Event Player, 100);
+	}
+}
+
+rule("----generate HUD for boss")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Slot 0;
+	}
+
+	conditions
+	{
+		Global Variable(finised_resetting_vars) == True;
+		Has Spawned(Global Variable(boss_reference)) == True;
+	}
+
+	actions
+	{
+		Wait(0.080, Ignore Condition);
+		Create HUD Text(All Players(All Teams), Custom String("{0}  {1} ({2}%)", Hero Icon String(Hero Of(Global Variable(
+			boss_reference))), Custom String("{0}/{1} HP", Round To Integer(Health(Event Player), Up), Round To Integer(Max Health(
+			Event Player), Up), Null), Multiply(Normalized Health(Event Player), 100)), Null, Null, Top, -10.000, White, White, White,
+			Visible To and String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), Custom String("Time Rift: {0}%", Global Variable(sigma_timerift_ult_charge), Null, Null),
+			Null, Null, Top, 10, Sky Blue, White, White, Visible To and String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Event Player, Custom String("Time Freeze CD: {0}s", Global Variable(sigma_timestop_CD), Null, Null), Null, Null,
+			Right, 1, White, White, White, String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Event Player, Custom String("Planet Toss CD: {0}s", Global Variable(sigma_planettoss_CD), Null, Null), Null, Null,
+			Right, 2, White, White, White, String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(finised_resetting_vars, False);
+		Create HUD Text(All Players(All Teams), Custom String("speed up: {0}", Speed Of In Direction(Event Player, Up), Null, Null), Null,
+			Null, Left, 0, White, White, White, Visible To and String, Default Visibility);
+		Create HUD Text(All Players(All Teams), Custom String("speed down: {0}", Speed Of In Direction(Event Player, Down), Null, Null),
+			Null, Null, Left, 0, White, White, White, Visible To and String, Default Visibility);
+		Create In-World Text(All Players(All Teams), Custom String("{0}: {1}/{2} HP", Hero Of(Global Variable(boss_reference)),
+			Round To Integer(Health(Global Variable(boss_reference)), Up), Round To Integer(Max Health(Global Variable(boss_reference)),
+			Up)), Event Player, 3, Do Not Clip, Visible To Position and String, White, Default Visibility);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Value In Array(Append To Array(Append To Array(Empty Array, Event Player), Null), Multiply(1, Not(Global Variable(
+			sigma_polarity)))), Custom String("Positive Polarity: {0} CD", Global Variable(sigma_polarity_CD), Null, Null), Null, Null,
+			Right, 3, Blue, White, White, Visible To and String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(Value In Array(Append To Array(Append To Array(Empty Array, Event Player), Null), Multiply(1, Global Variable(
+			sigma_polarity))), Custom String("Negative Polarity: {0} CD", Global Variable(sigma_polarity_CD), Null, Null), Null, Null,
+			Right, 3, Red, White, White, Visible To and String, Default Visibility);
+		Modify Global Variable(boss_main_hud, Append To Array, Last Text ID);
+	}
+}
+
+rule("----boss enrage mechanic")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Or(Or(Has Status(Event Player, Hacked), Has Status(Event Player, Stunned)), Has Status(Event Player, Frozen)) == True;
+		Global Variable(boss_enrage) != True;
+		Event Player == Global Variable(boss_reference);
+	}
+
+	actions
+	{
+		Set Global Variable(boss_enrage, True);
+		Wait(0.016, Ignore Condition);
+		Play Effect(All Players(All Teams), Explosion Sound, Red, Position Of(Event Player), 200);
+		Wait(0.032, Ignore Condition);
+		Play Effect(All Players(All Teams), Bad Explosion, Red, Position Of(Event Player), 50);
+		Clear Status(Event Player, Frozen);
+		Clear Status(Event Player, Hacked);
+		Wait(0.016, Ignore Condition);
+		Create In-World Text(All Players(All Teams), Custom String("BOSS IS ENRAGED!!! DO NOT SPAM CCs, USE WISELY!", Null, Null, Null),
+			Event Player, 15, Do Not Clip, Visible To Position and String, White, Default Visibility);
+		Modify Global Variable(boss_enrage_hud, Append To Array, Last Text ID);
+		Wait(0.016, Ignore Condition);
+		Create HUD Text(All Players(All Teams), Custom String("BOSS IS ENRAGED!!! DO NOT SPAM CCs, USE WISELY!", Null, Null, Null), Null,
+			Null, Top, 20, Red, White, White, Visible To and String, Default Visibility);
+		Modify Global Variable(boss_enrage_hud, Append To Array, Last Text ID);
+		Set Status(Event Player, Null, Invincible, 10);
+		Set Status(Event Player, Null, Phased Out, 10);
+		Set Healing Received(Event Player, 300);
+		Set Move Speed(Event Player, 200);
+		Set Damage Dealt(Event Player, 300);
+		Wait(10, Ignore Condition);
+		Destroy HUD Text(Value In Array(Global Variable(boss_enrage_hud), 1));
+		Destroy In-World Text(Value In Array(Global Variable(boss_enrage_hud), 0));
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(boss_enrage_hud, Empty Array);
+		Set Move Speed(Event Player, 100);
+		Set Damage Dealt(Event Player, 100);
+		Set Healing Received(Event Player, 100);
+		Wait(10, Ignore Condition);
+		Set Global Variable(boss_enrage, False);
+	}
+}
+
+rule("----declare attacker victory on boss death")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Event Player == Global Variable(boss_reference);
+	}
+
+	actions
+	{
+		Wait(1, Ignore Condition);
+		Declare Team Victory(Team 2);
+		Set Team Score(Team 2, 1);
+	}
+}
+
+rule("----boss win check")
+{
+	event
+	{
+		Player Earned Elimination;
+		Team 1;
+		All;
+	}
+
+	conditions
+	{
+		Team Score(Team 1) >= 50;
+	}
+
+	actions
+	{
+		Wait(0.250, Ignore Condition);
+		Declare Team Victory(Team 1);
+	}
+}
+
+rule("init - attackers")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, A) != True;
+		Has Spawned(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, True);
+		Set Player Variable(Event Player, attacker_time_pos, Empty Array);
+		Set Player Variable(Event Player, attacker_time_facing, Empty Array);
+		Set Player Variable(Event Player, polarity_storage, Empty Array);
+		Set Player Variable(Event Player, polarity_inworld_ent, Empty Array);
+		Set Player Variable At Index(Event Player, attacker_time_pos, 15, Null);
+		Set Player Variable At Index(Event Player, attacker_time_facing, 15, Null);
+		Set Player Variable(Event Player, is_using_trinket, False);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, timerift_loop_iterator, 0);
+		Set Player Variable(Event Player, F, 0);
+		Set Player Variable(Event Player, G, Null);
+		Set Player Variable(Event Player, is_time_stopped, False);
+		Set Player Variable(Event Player, J, False);
+		Set Player Variable(Event Player, L, Null);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, P, Empty Array);
+		Wait(0.016, Ignore Condition);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Set Player Variable(Event Player, is_using_trinket, False);
+		Set Player Variable(Event Player, trinket_cd, 0);
+		Set Player Variable(Event Player, trinket_available, True);
+		Create HUD Text(Event Player, Hero Icon String(Hero Of(Event Player)), Null, Hero Of(Event Player), Left, 0, Blue, White, White,
+			Visible To and String, Default Visibility);
+		Create HUD Text(Event Player, String("{0}: {1}", Custom String("Trinket CD", Null, Null, Null), String("{0} sec", Player Variable(
+			Event Player, trinket_cd), Null, Null), Null), Null, Null, Left, 1, Aqua, White, White, Visible To and String,
+			Default Visibility);
+		Create HUD Text(Event Player, Null, Custom String(
+			"Trinket will get you out of all CC, heal you, increase movement speed, increase damage, increase healing for 3 sec. 20 Sec CD",
+			Null, Null, Null), Null, Left, 2, White, White, White, Visible To and String, Default Visibility);
+		Set Player Variable(Event Player, is_shattered, False);
+		Set Player Variable(Event Player, attacker_sig_using_ult, False);
+		Set Player Variable(Event Player, time_stop_position, Null);
+		Set Player Variable(Event Player, recording_time, True);
+		Set Player Variable(Event Player, time_rewinding, False);
+		Set Player Variable(Event Player, time_arr_copy, Empty Array);
+		Set Player Variable(Event Player, time_pos_copy, Empty Array);
+		Set Player Variable(Event Player, time_facing_copy, Empty Array);
+		Set Player Variable(Event Player, time_rewind_iterator, 0);
+		Set Player Variable(Event Player, time_pos_length, 0);
+		Set Player Variable(Event Player, polarity_push_target, Null);
+		Set Player Variable(Event Player, polarity_pull_target, Null);
+		Create HUD Text(Value In Array(Append To Array(Append To Array(Empty Array, Event Player), Null), Multiply(1, Not(Array Contains(
+			Global Variable(sigma_positive_polarity_players), Event Player)))), Custom String("Positively charged: {0} stacks", Count Of(
+			Player Variable(Event Player, polarity_storage)), Null, Null), Null, Null, Left, 3, Blue, White, White, Visible To and String,
+			Default Visibility);
+		Create HUD Text(Value In Array(Append To Array(Append To Array(Empty Array, Event Player), Null), Multiply(1, Not(Array Contains(
+			Global Variable(sigma_negative_polarity_players), Event Player)))), Custom String("Negatively charged: {0} stacks", Count Of(
+			Player Variable(Event Player, polarity_storage)), Null, Null), Null, Null, Left, 3, Red, White, White, Visible To and String,
+			Default Visibility);
+		Set Player Variable(Event Player, discharge_target, Null);
+		Set Player Variable(Event Player, discharge_target_stacks, 0);
+		Create HUD Text(Event Player, Custom String("Discharge CD: {0}", Player Variable(Event Player, discharge_cooldown), Null, Null),
+			Null, Null, Left, 4, Purple, White, White, Visible To and String, Default Visibility);
+		Set Player Variable(Event Player, current_damage_dealt, 100);
+		Set Player Variable(Event Player, previous_damage_dealt, 100);
+		Set Player Variable(Event Player, current_move, 100);
+		Set Player Variable(Event Player, previous_move, 100);
+		Set Player Variable(Event Player, current_hp, 100);
+		Set Player Variable(Event Player, previous_hp, 100);
+		Set Player Variable(Event Player, current_damage_taken, 100);
+		Set Player Variable(Event Player, previous_damage_taken, 100);
+	}
+}
+
+rule("----attacker trinket")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Interact) == True;
+		Player Variable(Event Player, trinket_cd) <= 0;
+		Global Variable(disable_trinket) != True;
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+		Is Dead(Event Player) != True;
+		Player Variable(Event Player, attacker_sig_using_ult) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, trinket_cd, 23);
+		Set Player Variable(Event Player, discharge_cooldown, 7);
+		Set Player Variable(Event Player, is_using_trinket, True);
+		Set Player Variable(Event Player, is_time_stopped, False);
+		Set Player Variable(Event Player, trinket_available, False);
+		Destroy In-World Text(Player Variable(Event Player, polarity_inworld_ent));
+		Set Player Variable(Event Player, polarity_storage, Empty Array);
+		Modify Global Variable(sigma_positive_polarity_players, Remove From Array By Value, Event Player);
+		Set Player Variable(Event Player, current_damage_dealt, 200);
+		Set Player Variable(Event Player, current_move, 200);
+		Modify Global Variable(sigma_negative_polarity_players, Remove From Array By Value, Event Player);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Clear Status(Event Player, Stunned);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, polarity_inworld_ent, Null);
+		Set Player Variable(Event Player, J, False);
+		Set Player Variable(Event Player, trinket_cd, 20);
+		Destroy Effect(Player Variable(Event Player, T));
+		Destroy HUD Text(Player Variable(Event Player, V));
+		Destroy In-World Text(Player Variable(Event Player, W));
+		Destroy HUD Text(Player Variable(Event Player, G));
+		Play Effect(All Players(All Teams), Good Pickup Effect, White, Event Player, 100);
+		Set Status(Event Player, Null, Invincible, 3);
+		Set Status(Event Player, Null, Phased Out, 3);
+		Stop All Damage Over Time(Event Player);
+		Stop All Heal Over Time(Event Player);
+		Clear Status(Event Player, Stunned);
+		Clear Status(Event Player, Hacked);
+		Clear Status(Event Player, Rooted);
+		Clear Status(Event Player, Frozen);
+		Clear Status(Event Player, Asleep);
+		Clear Status(Event Player, Knocked Down);
+		Clear Status(Event Player, Burning);
+		Wait(0.032, Ignore Condition);
+		Create Effect(All Players(All Teams), Good Aura, White, Event Player, 1.500, Visible To Position and Radius);
+		Set Player Variable(Event Player, K, Last Created Entity);
+		Start Heal Over Time(Event Player, Event Player, 3, 9999);
+		Set Healing Received(Event Player, 500);
+		Set Healing Dealt(Event Player, 500);
+		Set Damage Dealt(Event Player, 200);
+		Set Move Speed(Event Player, 200);
+		Wait(3, Ignore Condition);
+		Destroy Effect(Player Variable(Event Player, K));
+		Set Healing Received(Event Player, 100);
+		Set Healing Dealt(Event Player, 100);
+		Set Player Variable(Event Player, is_using_trinket, False);
+		Stop Heal Over Time(Player Variable(Event Player, U));
+		Set Player Variable(Event Player, K, Null);
+		Set Player Variable(Event Player, current_damage_dealt, 100);
+		Set Player Variable(Event Player, current_move, 100);
+		Set Player Variable(Event Player, current_hp, 100);
+		Set Player Variable(Event Player, current_damage_taken, 100);
+	}
+}
+
+rule("----update damage dealt")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, current_damage_dealt) != Player Variable(Event Player, previous_damage_dealt);
+	}
+
+	actions
+	{
+		Set Damage Dealt(Event Player, Player Variable(Event Player, current_damage_dealt));
+		Set Player Variable(Event Player, previous_damage_dealt, Player Variable(Event Player, current_damage_dealt));
+	}
+}
+
+rule("----update move speed")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, current_move) != Player Variable(Event Player, previous_move);
+	}
+
+	actions
+	{
+		Set Move Speed(Event Player, Player Variable(Event Player, current_move));
+		Set Player Variable(Event Player, previous_move, Player Variable(Event Player, current_move));
+	}
+}
+
+rule("----update HP")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, current_hp) != Player Variable(Event Player, previous_hp);
+	}
+
+	actions
+	{
+		Set Max Health(Event Player, Player Variable(Event Player, current_hp));
+		Start Heal Over Time(Event Player, Event Player, 1, Max Health(Event Player));
+		Set Player Variable(Event Player, previous_hp, Player Variable(Event Player, current_hp));
+	}
+}
+
+rule("----update damage taken")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, current_damage_taken) != Player Variable(Event Player, previous_damage_taken);
+	}
+
+	actions
+	{
+		Set Damage Received(Event Player, Player Variable(Event Player, current_damage_taken));
+		Set Player Variable(Event Player, previous_damage_taken, Player Variable(Event Player, current_damage_taken));
+	}
+}
+
+rule("----buff attacker ult - on")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) == True;
+		Player Variable(Event Player, Y) != True;
+		Hero Of(Event Player) != Hero(Genji);
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+		Hero Of(Event Player) != Hero(Sigma);
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, Y, True);
+		Set Damage Dealt(Event Player, 135);
+	}
+}
+
+rule("----buff attacker ult - on for genji cause hese weak")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) == True;
+		Player Variable(Event Player, Y) != True;
+		Hero Of(Event Player) == Hero(Genji);
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, Y, True);
+		Set Damage Dealt(Event Player, 250);
+		Set Status(Event Player, Null, Invincible, 9);
+		Set Status(Event Player, Null, Phased Out, 9);
+	}
+}
+
+rule("----nerf attacker ult - on for sigma")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) == True;
+		Player Variable(Event Player, Y) != True;
+		Hero Of(Event Player) == Hero(Sigma);
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, attacker_sig_using_ult, True);
+		Wait(0.064, Ignore Condition);
+		Set Player Variable(Event Player, Y, True);
+		Set Damage Dealt(Event Player, 12);
+	}
+}
+
+rule("----buff attacker ult - off")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) != True;
+		Player Variable(Event Player, Y) == True;
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+	}
+
+	actions
+	{
+		Wait(0.250, Ignore Condition);
+		Set Player Variable(Event Player, Y, False);
+		Set Damage Dealt(Event Player, 100);
+		Set Player Variable(Event Player, attacker_sig_using_ult, False);
+	}
+}
+
+rule("----clear statuses on death")
+{
+	event
+	{
+		Player Died;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Value In Array(Player Variable(Event Player, P), 3) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, J, False);
+		Set Player Variable(Event Player, is_using_trinket, False);
+		Destroy Effect(Value In Array(Player Variable(Event Player, D), 0));
+		Destroy HUD Text(Value In Array(Player Variable(Event Player, D), 1));
+		Destroy Effect(Player Variable(Event Player, T));
+		Destroy HUD Text(Player Variable(Event Player, G));
+		Destroy HUD Text(Player Variable(Event Player, V));
+		Destroy In-World Text(Player Variable(Event Player, W));
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, D, Empty Array);
+		Set Player Variable(Event Player, P, Empty Array);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Modify Player Variable(Event Player, P, Append To Array, False);
+		Set Player Variable(Event Player, is_using_trinket, False);
+		Clear Status(Event Player, Knocked Down);
+		Clear Status(Event Player, Hacked);
+		Clear Status(Event Player, Burning);
+		Stop All Damage Over Time(Event Player);
+		Stop All Heal Over Time(Event Player);
+		Set Move Speed(Event Player, 100);
+		Set Healing Received(Event Player, 100);
+		Destroy Effect(Player Variable(Event Player, T));
+		Destroy In-World Text(Player Variable(Event Player, polarity_inworld_ent));
+		Set Player Variable(Event Player, polarity_storage, Empty Array);
+		Modify Global Variable(sigma_negative_polarity_players, Remove From Array By Value, Event Player);
+		Modify Global Variable(sigma_positive_polarity_players, Remove From Array By Value, Event Player);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, polarity_inworld_ent, Null);
+		Set Damage Dealt(Event Player, 100);
+		Set Damage Received(Event Player, 100);
+		Wait(0.200, Ignore Condition);
+		Stop All Damage Over Time(Event Player);
+		Stop All Heal Over Time(Event Player);
+	}
+}
+
+rule("----attacker win check")
+{
+	event
+	{
+		Player Died;
+		Team 1;
+		All;
+	}
+
+	actions
+	{
+		Wait(0.250, Ignore Condition);
+		Declare Team Victory(Team 2);
+	}
+}
+
+rule("universal CD loop")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(allow_universal_loop) == True;
+	}
+
+	actions
+	{
+		Wait(0.125, Ignore Condition);
+		Skip If(Compare(Global Variable(sigma_timestop_CD), <=, 0), 1);
+		Modify Global Variable(sigma_timestop_CD, Subtract, 0.250);
+		Skip If(Compare(Global Variable(sigma_planettoss_CD), <=, 0), 1);
+		Modify Global Variable(sigma_planettoss_CD, Subtract, 0.250);
+		Skip If(Compare(Global Variable(sigma_polarity_CD), <=, 0), 1);
+		Modify Global Variable(sigma_polarity_CD, Subtract, 0.250);
+		Skip If(Compare(Global Variable(sigma_timerift_ult_charge), >=, 100), 1);
+		Modify Global Variable(sigma_timerift_ult_charge, Add, 2);
+		Modify Global Variable(universal_loop_var, Add, 1);
+		Wait(0.125, Ignore Condition);
+		Set Global Variable(universal_var_check, Global Variable(universal_loop_var));
+		Loop;
+	}
+}
+
+disabled rule("attackers - track position/facing and CDs")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(universal_loop_var) != Global Variable(universal_var_check);
+		Player Variable(Event Player, recording_time) == True;
+	}
+
+	actions
+	{
+		Set Player Variable At Index(Event Player, attacker_time_pos, Modulo(Global Variable(universal_loop_var), 16), Position Of(
+			Event Player));
+		Set Player Variable At Index(Event Player, attacker_time_facing, Modulo(Global Variable(universal_loop_var), 16),
+			Facing Direction Of(Event Player));
+		Set Global Variable At Index(universal_loop_var, Modulo(Global Variable(sigma_HP_time_storage), 16), Health(Global Variable(
+			boss_reference)));
+		Skip If(Compare(Player Variable(Event Player, discharge_cooldown), <=, 0), 1);
+		Modify Player Variable(Event Player, discharge_cooldown, Subtract, 0.250);
+		Skip If(Compare(Player Variable(Event Player, trinket_cd), <=, 0), 1);
+		Modify Player Variable(Event Player, trinket_cd, Subtract, 0.250);
+	}
+}
+
+rule("=================================================== Sigma ========================================================")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Has Spawned(Global Variable(boss_reference)) == True;
+	}
+
+	actions
+	{
+		Create Effect(All Players(Team 2), Bad Aura, Sky Blue, Add(Position Of(Event Player), Vector(0, 1.830, 0)), 1.150,
+			Visible To Position and Radius);
+	}
+}
+
+rule("jump - float up")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Jump) == True;
+		Is Button Held(Event Player, Crouch) != True;
+		Speed Of In Direction(Event Player, Up) <= 6;
+	}
+
+	actions
+	{
+		Wait(0.064, Abort When False);
+		Apply Impulse(Global Variable(boss_reference), Up, 1, To World, Incorporate Contrary Motion);
+		Loop If Condition Is True;
+	}
+}
+
+rule("crouch - float down")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		Is Button Held(Event Player, Jump) != True;
+		Speed Of In Direction(Event Player, Down) <= 6;
+	}
+
+	actions
+	{
+		Wait(0.064, Abort When False);
+		Apply Impulse(Global Variable(boss_reference), Down, 1, To World, Incorporate Contrary Motion);
+		Loop If Condition Is True;
+	}
+}
+
+rule("crouch + space - stablize")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+		Is Button Held(Event Player, Jump) == True;
+	}
+
+	actions
+	{
+		Wait(0.064, Abort When False);
+		Apply Impulse(Global Variable(boss_reference), Up, 2, To World, Cancel Contrary Motion);
+		Wait(0.064, Ignore Condition);
+		Apply Impulse(Global Variable(boss_reference), Down, Speed Of In Direction(Event Player, Up), To World,
+			Incorporate Contrary Motion);
+		Wait(0.064, Ignore Condition);
+		Apply Impulse(Global Variable(boss_reference), Left, 2, To World, Cancel Contrary Motion);
+		Wait(0.064, Ignore Condition);
+		Apply Impulse(Global Variable(boss_reference), Right, Speed Of In Direction(Event Player, Left), To World,
+			Incorporate Contrary Motion);
+		Wait(0.064, Ignore Condition);
+		Apply Impulse(Global Variable(boss_reference), Backward, 2, To World, Cancel Contrary Motion);
+		Wait(0.064, Ignore Condition);
+		Apply Impulse(Global Variable(boss_reference), Forward, Speed Of In Direction(Event Player, Backward), To World,
+			Incorporate Contrary Motion);
+	}
+}
+
+rule("sigma attraction shift - attackers")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Is Using Ability 1(Global Variable(boss_reference)) == True;
+		And(Is On Ground(Event Player), Is Crouching(Event Player)) != True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Position Of(Event Player), Position Of(Global Variable(boss_reference))), 3,
+			To World, Incorporate Contrary Motion);
+		Wait(0.080, Ignore Condition);
+		Loop If Condition Is True;
+		Set Global Variable(sigma_shift_used, True);
+	}
+}
+
+rule("sigma attraction - on")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Using Ability 1(Event Player) == True;
+		Global Variable(sigma_shift_used) == False;
+	}
+
+	actions
+	{
+		Set Damage Dealt(All Players(Team 2), 0.100);
+		Set Global Variable(sigma_blackhole_hp_diff, Health(Event Player));
+		Set Status(Event Player, Null, Phased Out, 10);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(sigma_shift_used, True);
+	}
+}
+
+rule("sigma attraction - off - stage 1: blackhole")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Using Ability 1(Global Variable(boss_reference)) != True;
+		Global Variable(sigma_shift_used) == True;
+	}
+
+	actions
+	{
+		Wait(0.160, Ignore Condition);
+		Set Global Variable(sigma_blackhole_hp_diff, Absolute Value(Subtract(Health(Event Player), Global Variable(
+			sigma_blackhole_hp_diff))));
+		Wait(0.016, Ignore Condition);
+		Modify Global Variable(sigma_blackhole_hp_diff, Divide, 200);
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(sigma_blackhole_radius, Add(1, Global Variable(sigma_blackhole_hp_diff)));
+		Set Damage Dealt(All Players(Team 2), 100);
+		Set Global Variable(sigma_shift_used, False);
+		Set Global Variable(sigma_black_hole_pos, Add(Position Of(Event Player), Vector(0, Add(8, Global Variable(
+			sigma_blackhole_hp_diff)), 0)));
+		Clear Status(Event Player, Phased Out);
+		Set Global Variable(sigma_blackhole_start, True);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Bad Aura, Blue, Global Variable(sigma_black_hole_pos), Global Variable(
+			sigma_blackhole_radius), Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Bad Aura, Blue, Global Variable(sigma_black_hole_pos), Global Variable(
+			sigma_blackhole_radius), Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Bad Aura, Blue, Global Variable(sigma_black_hole_pos), Global Variable(
+			sigma_blackhole_radius), Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Good Aura, Blue, Global Variable(sigma_black_hole_pos), Multiply(Global Variable(
+			sigma_blackhole_radius), 0.750), Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Good Aura, Blue, Global Variable(sigma_black_hole_pos), Global Variable(
+			sigma_blackhole_radius), Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Bad Aura Sound, Blue, Global Variable(sigma_black_hole_pos), 200, Visible To);
+		Modify Global Variable(sigma_blackhole_array, Append To Array, Last Created Entity);
+		Wait(8, Ignore Condition);
+		Set Global Variable(sigma_blackhole_start, False);
+	}
+}
+
+rule("sigma blackhole - enemy suction")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_blackhole_start) == True;
+		Global Variable(sigma_blackhole_array) != Empty Array;
+		And(Is On Ground(Event Player), Is Crouching(Event Player)) != True;
+		Player Variable(Event Player, is_using_trinket) != True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Direction Towards(Position Of(Event Player), Global Variable(sigma_black_hole_pos)), Multiply(30,
+			Divide(1, Distance Between(Position Of(Event Player), Global Variable(sigma_black_hole_pos)))), To World,
+			Incorporate Contrary Motion);
+		Wait(0.128, Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("sigma blackhole - kill on contact")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_blackhole_start) == True;
+		Global Variable(sigma_blackhole_array) != Empty Array;
+		Distance Between(Position Of(Event Player), Global Variable(sigma_black_hole_pos)) <= Global Variable(sigma_blackhole_radius);
+		Is Dead(Event Player) != True;
+		Player Variable(Event Player, is_using_trinket) != True;
+	}
+
+	actions
+	{
+		Kill(Event Player, Global Variable(boss_reference));
+	}
+}
+
+rule("sigma blackhole - cleanup")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_blackhole_start) == False;
+		Global Variable(sigma_blackhole_array) != Empty Array;
+	}
+
+	actions
+	{
+		Destroy Effect(Value In Array(Global Variable(sigma_blackhole_array), Global Variable(sigma_blackhole_iterator)));
+		Wait(0.032, Ignore Condition);
+		Modify Global Variable(sigma_blackhole_iterator, Add, 1);
+		Loop If(Compare(Global Variable(sigma_blackhole_iterator), <, Count Of(Global Variable(sigma_blackhole_array))));
+		Play Effect(All Players(All Teams), Explosion Sound, White, Global Variable(sigma_black_hole_pos), 200);
+		Set Global Variable(sigma_blackhole_array, Empty Array);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(sigma_blackhole_iterator, 0);
+		Set Global Variable(sigma_blackhole_radius, 0);
+	}
+}
+
+rule("sigma timestop area - init conditions")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Secondary Fire) == True;
+		Global Variable(sigma_timestop_CD) <= 0;
+		Global Variable(sigma_timerift_pos) == 0;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_timestop_radius, 0);
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(sigma_time_stop_area_used, True);
+		Wait(0.016, Ignore Condition);
+		Create Effect(All Players(All Teams), Sphere, White, Eye Position(Event Player), Global Variable(sigma_timestop_radius),
+			Visible To Position and Radius);
+		Set Global Variable(single_ent_storage, Last Created Entity);
+		Communicate(Event Player, Voice Line Left);
+	}
+}
+
+rule("sigma timestop area - activate")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Or(Compare(Is Button Held(Event Player, Secondary Fire), !=, True), Compare(Global Variable(sigma_timestop_radius), >=, 10))
+			== True;
+		Global Variable(sigma_time_stop_area_used) == True;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_time_stop_area_used, False);
+		Set Global Variable(sigma_timestop_CD, 20);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Filtered Array(All Players(Team 2), And(Compare(Distance Between(Current Array Element, Eye Position(
+			Global Variable(boss_reference))), <=, Global Variable(sigma_timestop_radius)), Compare(Player Variable(Event Player,
+			is_using_trinket), !=, True))), is_time_stopped, True);
+		Wait(0.016, Ignore Condition);
+		Destroy Effect(Global Variable(single_ent_storage));
+		Set Global Variable(single_ent_storage, Null);
+		Play Effect(All Players(All Teams), Ring Explosion, White, Eye Position(Global Variable(boss_reference)), Global Variable(
+			sigma_timestop_radius));
+		Play Effect(All Players(All Teams), Ring Explosion Sound, White, Eye Position(Global Variable(boss_reference)), 200);
+	}
+}
+
+rule("sigma timestop - player variable check")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, is_time_stopped) == True;
+		Event Player != Global Variable(boss_reference);
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, time_stop_position, Position Of(Event Player));
+		Set Status(Event Player, Null, Hacked, 4);
+		Set Status(Event Player, Null, Rooted, 4);
+		Set Healing Received(Event Player, 0);
+		Wait(0.032, Ignore Condition);
+		Disallow Button(Event Player, Primary Fire);
+		Disallow Button(Event Player, Secondary Fire);
+		Wait(4, Abort When False);
+		Set Player Variable(Event Player, time_stop_position, Null);
+		Set Player Variable(Event Player, is_time_stopped, False);
+		Set Healing Received(Event Player, 100);
+	}
+}
+
+rule("sigma timestop - player stopped in time")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, is_time_stopped) == True;
+		Player Variable(Event Player, time_stop_position) != Null;
+		Player Variable(Event Player, is_using_trinket) != True;
+		Event Player != Global Variable(boss_reference);
+	}
+
+	actions
+	{
+		Teleport(Event Player, Player Variable(Event Player, time_stop_position));
+		Wait(0.016, Ignore Condition);
+		Loop If Condition Is True;
+		Wait(0.032, Ignore Condition);
+		Allow Button(Event Player, Primary Fire);
+		Allow Button(Event Player, Secondary Fire);
+	}
+}
+
+rule("sigma timerift - ensure ult % not over 100")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_timerift_ult_charge) >= 100;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_timerift_ult_charge, 100);
+	}
+}
+
+rule("sigma timerift - init conditions")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Interact) == True;
+		Is On Ground(Event Player) == True;
+		Global Variable(sigma_timerift_ult_charge) >= 100;
+	}
+
+	actions
+	{
+		Set Gravity(All Players(Team 2), 1);
+		Set Global Variable(sigma_HP_copy, Global Variable(sigma_HP_time_storage));
+		Set Global Variable(sigma_timerift_ult_charge, 0);
+		Set Global Variable(sigma_timerift_radius, 0);
+		Set Global Variable(sigma_timerift_pos, Add(Position Of(Event Player), Vector(0, 20, 0)));
+		Create Effect(All Players(All Teams), Sphere, White, Global Variable(sigma_timerift_pos), Global Variable(sigma_timerift_radius),
+			Visible To Position and Radius);
+		Set Global Variable(sigma_timerift_ent, Last Created Entity);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(disable_trinket, True);
+		Set Gravity(All Players(Team 2), 10);
+		Communicate(Event Player, Emote Up);
+		Wait(3, Ignore Condition);
+		Destroy Effect(Global Variable(sigma_timerift_ent));
+		Play Effect(All Players(All Teams), Good Explosion, White, Global Variable(sigma_timerift_pos), 200);
+		Play Effect(All Players(All Teams), Good Pickup Effect, White, Global Variable(sigma_timerift_pos), 200);
+		Play Effect(All Players(All Teams), Debuff Impact Sound, White, Global Variable(sigma_timerift_pos), 200);
+		Set Global Variable(sigma_timerift_activated, True);
+		Wait(2, Ignore Condition);
+		Set Global Variable(disable_trinket, False);
+		Wait(5, Ignore Condition);
+		Heal(Global Variable(boss_reference), Null, Absolute Value(Divide(Subtract(Value In Array(Global Variable(sigma_HP_copy), Subtract(
+			Count Of(Global Variable(sigma_HP_copy)), 1)), Value In Array(Global Variable(sigma_HP_copy), 0)), 3)));
+		Set Global Variable(sigma_timerift_pos, 0);
+		Set Global Variable(sigma_timestop_CD, 0);
+		Set Global Variable(sigma_planettoss_CD, 0);
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(sigma_HP_copy, Empty Array);
+		Set Global Variable(sigma_timerift_activated, False);
+	}
+}
+
+rule("sigma timerift - player init")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_timerift_activated) == True;
+	}
+
+	actions
+	{
+		Set Gravity(Event Player, 100);
+		Set Status(Event Player, Null, Rooted, 9999);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, time_pos_copy, Player Variable(Event Player, attacker_time_pos));
+		Set Player Variable(Event Player, time_facing_copy, Player Variable(Event Player, attacker_time_facing));
+		Set Player Variable(Event Player, time_rewind_iterator, Global Variable(universal_loop_var));
+		Set Player Variable(Event Player, timerift_loop_iterator, Subtract(Count Of(Player Variable(Event Player, time_pos_copy)), 1));
+		Wait(0.064, Ignore Condition);
+		Start Facing(Event Player, Value In Array(Player Variable(Event Player, time_facing_copy), Player Variable(Event Player,
+			time_rewind_iterator)), 100, To World, Direction and Turn Rate);
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, time_rewinding, True);
+	}
+}
+
+rule("sigma timerift - rewind")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, time_rewinding) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, time_pos_length, Distance Between(Position Of(Event Player), Value In Array(Player Variable(
+			Event Player, time_pos_copy), Modulo(Player Variable(Event Player, time_rewind_iterator), 16))));
+		Apply Impulse(Event Player, Direction Towards(Position Of(Event Player), Value In Array(Player Variable(Event Player,
+			time_pos_copy), Modulo(Player Variable(Event Player, time_rewind_iterator), 16))), Multiply(2, Player Variable(Event Player,
+			time_pos_length)), To World, Cancel Contrary Motion);
+		Wait(0.250, Ignore Condition);
+		Modify Player Variable(Event Player, time_rewind_iterator, Subtract, 1);
+		Modify Player Variable(Event Player, timerift_loop_iterator, Subtract, 1);
+		Loop If(And(Compare(Player Variable(Event Player, timerift_loop_iterator), >=, 0), Not(Player Variable(Event Player,
+			is_using_trinket))));
+		Wait(0.032, Ignore Condition);
+		Stop Facing(Event Player);
+		Wait(0.032, Ignore Condition);
+		Clear Status(Event Player, Rooted);
+		Set Player Variable(Event Player, time_pos_copy, Empty Array);
+		Set Player Variable(Event Player, time_facing_copy, Empty Array);
+		Set Player Variable(Event Player, time_rewind_iterator, 0);
+		Set Player Variable(Event Player, time_pos_length, 0);
+		Set Player Variable(Event Player, time_rewinding, False);
+	}
+}
+
+rule("sigma planet toss - init conditions ---- dont know if im gonna do this yet")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ability 2) == True;
+		Global Variable(sigma_planettoss_CD) <= 0;
+	}
+}
+
+rule("nerf sigma reg ult - on")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) == True;
+	}
+
+	actions
+	{
+		Set Damage Dealt(Event Player, 50);
+	}
+}
+
+rule("nerf sigma reg ult - off")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Using Ultimate(Event Player) != True;
+	}
+
+	actions
+	{
+		Wait(0.250, Ignore Condition);
+		Set Damage Dealt(Event Player, 100);
+	}
+}
+
+rule("sigma change polarity")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 1;
+		Sigma;
+	}
+
+	conditions
+	{
+		Is Communicating(Event Player, Need Healing) == True;
+		Global Variable(sigma_polarity_CD) <= 0;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_polarity_CD, 4.250);
+		Set Global Variable(sigma_polarity, Not(Global Variable(sigma_polarity)));
+	}
+}
+
+rule("sigma polarity rock - impact positive")
+{
+	event
+	{
+		Player Took Damage;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Has Status(Event Player, Knocked Down) == True;
+		Has Status(Event Player, Stunned) == True;
+		Global Variable(sigma_polarity) == True;
+		Or(Compare(Player Variable(Event Player, polarity_storage), ==, Empty Array), Compare(Count Of(Filtered Array(Player Variable(
+			Event Player, polarity_storage), Compare(Current Array Element, ==, False))), ==, 0)) == True;
+		Player Variable(Event Player, discharge_cooldown) <= 0;
+	}
+
+	actions
+	{
+		Clear Status(Event Player, Knocked Down);
+		Clear Status(Event Player, Stunned);
+		Wait(0.016, Ignore Condition);
+		Skip If(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), 3);
+		Create In-World Text(All Players(All Teams), Custom String("{0}{1}{2}", Value In Array(Append To Array(Append To Array(Empty Array,
+			Custom String("+", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(
+			Event Player, polarity_storage)), >, 0)))), Value In Array(Append To Array(Append To Array(Empty Array, Custom String("+",
+			Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(Event Player,
+			polarity_storage)), >, 1)))), Custom String("{0}{1}", Value In Array(Append To Array(Append To Array(Empty Array,
+			Custom String("+", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(
+			Event Player, polarity_storage)), >, 2)))), Value In Array(Append To Array(Append To Array(Empty Array, Custom String("+",
+			Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(Event Player,
+			polarity_storage)), >, 3)))), Null)), Event Player, 3, Clip Against Surfaces, Visible To Position and String, Blue,
+			Default Visibility);
+		Set Player Variable(Event Player, polarity_inworld_ent, Last Text ID);
+		Modify Global Variable(sigma_positive_polarity_players, Append To Array, Event Player);
+		Modify Player Variable(Event Player, polarity_storage, Append To Array, Global Variable(sigma_polarity));
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, current_hp, Add(100, Multiply(10, Raise To Power(Count Of(Player Variable(Event Player,
+			polarity_storage)), 2))));
+		Set Player Variable(Event Player, current_damage_taken, Add(100, Multiply(10, Raise To Power(Count Of(Player Variable(Event Player,
+			polarity_storage)), 2))));
+	}
+}
+
+rule("sigma polarity rock - impact negative")
+{
+	event
+	{
+		Player Took Damage;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Has Status(Event Player, Knocked Down) == True;
+		Has Status(Event Player, Stunned) == True;
+		Global Variable(sigma_polarity) == False;
+		Or(Compare(Player Variable(Event Player, polarity_storage), ==, Empty Array), Compare(Count Of(Filtered Array(Player Variable(
+			Event Player, polarity_storage), Compare(Current Array Element, ==, True))), ==, 0)) == True;
+		Player Variable(Event Player, discharge_cooldown) <= 0;
+	}
+
+	actions
+	{
+		Clear Status(Event Player, Knocked Down);
+		Clear Status(Event Player, Stunned);
+		Skip If(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), 3);
+		Create In-World Text(All Players(All Teams), Custom String("{0}{1} {2}", Value In Array(Append To Array(Append To Array(
+			Empty Array, Custom String("-", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(
+			Player Variable(Event Player, polarity_storage)), >, 0)))), Value In Array(Append To Array(Append To Array(Empty Array,
+			Custom String(" -", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(
+			Event Player, polarity_storage)), >, 1)))), Custom String("{0} {1}", Value In Array(Append To Array(Append To Array(
+			Empty Array, Custom String("-", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(
+			Player Variable(Event Player, polarity_storage)), >, 2)))), Value In Array(Append To Array(Append To Array(Empty Array,
+			Custom String("-", Null, Null, Null)), Custom String("", Null, Null, Null)), Multiply(1, Not(Compare(Count Of(Player Variable(
+			Event Player, polarity_storage)), >, 3)))), Null)), Event Player, 4, Clip Against Surfaces, Visible To Position and String,
+			Red, Default Visibility);
+		Set Player Variable(Event Player, polarity_inworld_ent, Last Text ID);
+		Modify Global Variable(sigma_negative_polarity_players, Append To Array, Event Player);
+		Modify Player Variable(Event Player, polarity_storage, Append To Array, Global Variable(sigma_polarity));
+		Wait(0.016, Ignore Condition);
+		Set Player Variable(Event Player, current_damage_dealt, Add(100, Multiply(10, Raise To Power(Count Of(Player Variable(Event Player,
+			polarity_storage)), 2))));
+		Set Player Variable(Event Player, current_move, Add(100, Multiply(10, Raise To Power(Count Of(Player Variable(Event Player,
+			polarity_storage)), 2))));
+	}
+}
+
+rule("sigma polarity rock - player vicinity check - positive & positive")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == True;
+		Is True For Any(Remove From Array(Global Variable(sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)),
+			Is In Line of Sight(Event Player, Current Array Element, All Barriers Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, polarity_push_target, Random Value In Array(Filtered Array(Remove From Array(Global Variable(
+			sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(Event Player, Current Array Element), <=,
+			Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)), Is In Line of Sight(Event Player,
+			Current Array Element, All Barriers Block LOS)))));
+		Apply Impulse(Event Player, Direction Towards(Player Variable(Event Player, polarity_push_target), Event Player), Raise To Power(
+			Count Of(Player Variable(Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+		Wait(Divide(0.500, Add(1, Count Of(Player Variable(Event Player, polarity_storage)))), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("sigma polarity rock - player vicinity check - negative & negative")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == False;
+		Is True For Any(Remove From Array(Global Variable(sigma_negative_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)),
+			Is In Line of Sight(Event Player, Current Array Element, All Barriers Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, polarity_push_target, Random Value In Array(Filtered Array(Remove From Array(Global Variable(
+			sigma_negative_polarity_players), Event Player), And(Compare(Distance Between(Event Player, Current Array Element), <=,
+			Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)), Is In Line of Sight(Event Player,
+			Current Array Element, All Barriers Block LOS)))));
+		Apply Impulse(Event Player, Direction Towards(Player Variable(Event Player, polarity_push_target), Event Player), Raise To Power(
+			Count Of(Player Variable(Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+		Wait(Divide(0.500, Add(1, Count Of(Player Variable(Event Player, polarity_storage)))), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("sigma polarity rock - player vicinity check - positive & negative")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == True;
+		Is True For Any(Remove From Array(Global Variable(sigma_negative_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)),
+			Is In Line of Sight(Event Player, Current Array Element, All Barriers Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, polarity_pull_target, Random Value In Array(Filtered Array(Remove From Array(Global Variable(
+			sigma_negative_polarity_players), Event Player), And(Compare(Distance Between(Event Player, Current Array Element), <=,
+			Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)), Is In Line of Sight(Event Player,
+			Current Array Element, All Barriers Block LOS)))));
+		Apply Impulse(Event Player, Direction Towards(Event Player, Player Variable(Event Player, polarity_pull_target)), Raise To Power(
+			Count Of(Player Variable(Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+		Wait(Divide(0.500, Add(1, Count Of(Player Variable(Event Player, polarity_storage)))), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("sigma polarity rock - player vicinity check - negative & positive")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == False;
+		Is True For Any(Remove From Array(Global Variable(sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)),
+			Is In Line of Sight(Event Player, Current Array Element, All Barriers Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, polarity_pull_target, Random Value In Array(Filtered Array(Remove From Array(Global Variable(
+			sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(Event Player, Current Array Element), <=,
+			Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)), Is In Line of Sight(Event Player,
+			Current Array Element, All Barriers Block LOS)))));
+		Apply Impulse(Event Player, Direction Towards(Event Player, Player Variable(Event Player, polarity_pull_target)), Raise To Power(
+			Count Of(Player Variable(Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+		Wait(Divide(0.500, Add(1, Count Of(Player Variable(Event Player, polarity_storage)))), Ignore Condition);
+		Loop If Condition Is True;
+	}
+}
+
+rule("sigma polarity rock - positive discharge")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == True;
+		Is True For Any(Remove From Array(Global Variable(sigma_negative_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, 1.500), Is In Line of Sight(Event Player, Current Array Element,
+			Barriers Do Not Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Damage Received(Event Player, 100);
+		Set Player Variable(Event Player, discharge_cooldown, 11);
+		Set Player Variable(Event Player, discharge_target, Value In Array(Filtered Array(Global Variable(sigma_negative_polarity_players),
+			Compare(Distance Between(Event Player, Current Array Element), <=, 1.500)), 0));
+		Set Player Variable(Event Player, discharge_target_stacks, Count Of(Player Variable(Player Variable(Event Player,
+			discharge_target), polarity_storage)));
+		Destroy In-World Text(Player Variable(Event Player, polarity_inworld_ent));
+		Set Player Variable(Event Player, polarity_storage, Empty Array);
+		Modify Global Variable(sigma_positive_polarity_players, Remove From Array By Value, Event Player);
+		Destroy In-World Text(Player Variable(Player Variable(Event Player, discharge_target), polarity_inworld_ent));
+		Set Player Variable(Player Variable(Event Player, discharge_target), polarity_storage, Empty Array);
+		Modify Global Variable(sigma_negative_polarity_players, Remove From Array By Value, Player Variable(Event Player,
+			discharge_target));
+		Damage(Event Player, Player Variable(Event Player, discharge_target), Multiply(Max Health(Event Player), Multiply(0.100,
+			Raise To Power(Player Variable(Event Player, discharge_target_stacks), 2))));
+		Play Effect(All Players(All Teams), Bad Explosion, Purple, Event Player, 3);
+		Play Effect(All Players(All Teams), Explosion Sound, Purple, Event Player, 3);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, polarity_inworld_ent, Null);
+		Set Player Variable(Event Player, polarity_inworld_ent, Player Variable(Event Player, discharge_target));
+		Set Player Variable(Event Player, current_damage_dealt, 100);
+		Set Player Variable(Event Player, current_move, 100);
+		Set Player Variable(Event Player, current_hp, 100);
+		Set Player Variable(Event Player, current_damage_taken, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_damage_dealt, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_move, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_hp, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_damage_taken, 100);
+		Modify Global Variable(sigma_timerift_ult_charge, Add, 3);
+	}
+}
+
+rule("sigma polarity rock - negative discharge")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, polarity_storage) != Empty Array;
+		Value In Array(Player Variable(Event Player, polarity_storage), 0) == False;
+		Is True For Any(Remove From Array(Global Variable(sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(
+			Event Player, Current Array Element), <=, 1.500), Is In Line of Sight(Event Player, Current Array Element,
+			Barriers Do Not Block LOS))) == True;
+	}
+
+	actions
+	{
+		Set Damage Received(Event Player, 100);
+		Set Player Variable(Event Player, discharge_cooldown, 11);
+		Set Player Variable(Event Player, discharge_target, Value In Array(Filtered Array(Global Variable(sigma_positive_polarity_players),
+			Compare(Distance Between(Event Player, Current Array Element), <=, 1.500)), 0));
+		Set Player Variable(Event Player, discharge_target_stacks, Count Of(Player Variable(Player Variable(Event Player,
+			discharge_target), polarity_storage)));
+		Destroy In-World Text(Player Variable(Event Player, polarity_inworld_ent));
+		Set Player Variable(Event Player, polarity_storage, Empty Array);
+		Modify Global Variable(sigma_negative_polarity_players, Remove From Array By Value, Event Player);
+		Destroy In-World Text(Player Variable(Player Variable(Event Player, discharge_target), polarity_inworld_ent));
+		Set Player Variable(Player Variable(Event Player, discharge_target), polarity_storage, Empty Array);
+		Modify Global Variable(sigma_positive_polarity_players, Remove From Array By Value, Player Variable(Event Player,
+			discharge_target));
+		Damage(Event Player, Player Variable(Event Player, discharge_target), Multiply(Max Health(Event Player), Multiply(0.100,
+			Raise To Power(Player Variable(Event Player, discharge_target_stacks), 2))));
+		Play Effect(All Players(All Teams), Bad Explosion, Purple, Event Player, 3);
+		Play Effect(All Players(All Teams), Explosion Sound, Purple, Event Player, 3);
+		Wait(0.032, Ignore Condition);
+		Set Player Variable(Event Player, polarity_inworld_ent, Null);
+		Set Player Variable(Player Variable(Event Player, discharge_target), polarity_inworld_ent, Null);
+		Set Player Variable(Event Player, current_damage_dealt, 100);
+		Set Player Variable(Event Player, current_move, 100);
+		Set Player Variable(Event Player, current_hp, 100);
+		Set Player Variable(Event Player, current_damage_taken, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_damage_dealt, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_move, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_hp, 100);
+		Set Player Variable(Player Variable(Event Player, discharge_target), current_damage_taken, 100);
+		Modify Global Variable(sigma_timerift_ult_charge, Add, 3);
+	}
+}
+
+rule("attackers - track position/facing and CDs")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(universal_loop_var) != Global Variable(universal_var_check);
+		Player Variable(Event Player, recording_time) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Count Of(Player Variable(Event Player, attacker_time_pos)), <, 16), 3);
+		Modify Player Variable(Event Player, attacker_time_pos, Remove From Array By Index, 0);
+		Modify Player Variable(Event Player, attacker_time_facing, Remove From Array By Index, 0);
+		Modify Global Variable(sigma_HP_time_storage, Remove From Array By Index, 0);
+		Modify Player Variable(Event Player, attacker_time_pos, Append To Array, Position Of(Event Player));
+		Modify Player Variable(Event Player, attacker_time_facing, Append To Array, Facing Direction Of(Event Player));
+		Modify Global Variable(sigma_HP_time_storage, Append To Array, Health(Global Variable(boss_reference)));
+		Skip If(Compare(Player Variable(Event Player, discharge_cooldown), <=, 0), 1);
+		Modify Player Variable(Event Player, discharge_cooldown, Subtract, 0.250);
+		Skip If(Compare(Player Variable(Event Player, trinket_cd), <=, 0), 1);
+		Modify Player Variable(Event Player, trinket_cd, Subtract, 0.250);
+	}
+}

@@ -1,0 +1,418 @@
+variables
+{
+	global:
+		79: sigma_polarity_orbs_length_cur
+		83: sigma_polarity_orbs_travel_var
+}
+
+conditions
+{
+	Global Variable(sigma_polarity_orbs_travel_var) >= Global Variable(sigma_polarity_orbs_length_cur);
+}
+
+variables
+{
+	global:
+		79: sigma_polarity_orbs_length_cur
+		80: sigma_polarity_orbs_length_max
+		83: sigma_polarity_orbs_travel_var
+}
+
+conditions
+{
+	Or(Compare(Global Variable(sigma_polarity_orbs_length_max), <=, 0), And(Compare(Global Variable(sigma_polarity_orbs_travel_var),
+		==, 20), Compare(Global Variable(sigma_polarity_orbs_length_cur), ==, 20))) == True;
+	And(Compare(Global Variable(sigma_polarity_orbs_travel_var), >=, Global Variable(sigma_polarity_orbs_length_cur)), Compare(
+		Global Variable(sigma_polarity_orbs_length_max), <, 20)) == True;
+}
+variables
+{
+	global:
+		79: sigma_polarity_orbs_length_cur
+		80: sigma_polarity_orbs_length_max
+		83: sigma_polarity_orbs_travel_var
+}
+
+conditions
+{
+	Or(And(Compare(Global Variable(sigma_polarity_orbs_travel_var), >=, Global Variable(sigma_polarity_orbs_length_cur)), Compare(
+		Global Variable(sigma_polarity_orbs_length_max), <, 20)), True) == True;
+}
+
+variables
+{
+	global:
+		75: sigma_polarity_orbs_path
+		76: sigma_polarity_orbs_normal
+		77: sigma_polarity_orbs_location
+		78: sigma_polarity_orbs_used
+		79: sigma_polarity_orbs_length_cur
+		80: sigma_polarity_orbs_length_max
+		81: sigma_polarity_orbs_facing
+		82: sigma_polarity_orbs_RC_pos
+		83: sigma_polarity_orbs_travel_var
+		84: sigma_polarity_orbs_reflect
+		85: sigma_polarity_orbs_ent
+}
+
+rule("sigma polarity orbs - bounce end")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_polarity_orbs_used) == True;
+		Or(Compare(Global Variable(sigma_polarity_orbs_length_max), <=, 0), And(Compare(Global Variable(sigma_polarity_orbs_travel_var),
+			==, 20), Compare(Global Variable(sigma_polarity_orbs_length_cur), ==, 20))) == True;
+		And(Compare(Global Variable(sigma_polarity_orbs_travel_var), >=, Global Variable(sigma_polarity_orbs_length_cur)), Compare(
+			Global Variable(sigma_polarity_orbs_length_max), <, 20)) == True;
+		Or(Or(And(Compare(Global Variable(sigma_polarity_orbs_travel_var), >=, Global Variable(sigma_polarity_orbs_length_cur)), Compare(
+			Global Variable(sigma_polarity_orbs_length_max), <, 20)), True), True) == True;
+		Or(And(Compare(Global Variable(sigma_polarity_orbs_travel_var), >=, Global Variable(sigma_polarity_orbs_length_cur)), Compare(
+			Global Variable(sigma_polarity_orbs_length_max), <, 20)), Or(Compare(Global Variable(sigma_polarity_orbs_length_max), <=, 0),
+			And(Compare(Global Variable(sigma_polarity_orbs_travel_var), ==, 20), Compare(Global Variable(sigma_polarity_orbs_length_cur),
+			==, 20)))) == True;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_polarity_orbs_used, False);
+		Create HUD Text(All Players(All Teams), Custom String("destroyed", Null, Null, Null), Null, Null, Left, 0, White, White, White,
+			Visible To and String, Default Visibility);
+		Wait(0.016, Ignore Condition);
+		Destroy Effect(Value In Array(Global Variable(sigma_polarity_orbs_ent), 0));
+		Wait(0.016, Ignore Condition);
+		Set Global Variable(sigma_polarity_orbs_ent, Empty Array);
+		Set Global Variable(sigma_polarity_orbs_path, 0);
+		Set Global Variable(sigma_polarity_orbs_normal, 0);
+		Set Global Variable(sigma_polarity_orbs_location, 0);
+		Set Global Variable(sigma_polarity_orbs_used, False);
+		Set Global Variable(sigma_polarity_orbs_length_cur, 0);
+		Set Global Variable(sigma_polarity_orbs_length_max, 20);
+		Set Global Variable(sigma_polarity_orbs_facing, 0);
+		Set Global Variable(sigma_polarity_orbs_RC_pos, 0);
+		Set Global Variable(sigma_polarity_orbs_reflect, 0);
+	}
+}
+
+variables
+{
+	global:
+		22: boss_reference
+		76: sigma_polarity_orbs_normal
+		77: sigma_polarity_orbs_location
+		78: sigma_polarity_orbs_used
+		79: sigma_polarity_orbs_length_cur
+		80: sigma_polarity_orbs_length_max
+		81: sigma_polarity_orbs_facing
+		82: sigma_polarity_orbs_RC_pos
+		83: sigma_polarity_orbs_travel_var
+		84: sigma_polarity_orbs_reflect
+}
+
+rule("sigma polarity orbs - bounce")
+{
+	event
+	{
+		Ongoing - Global;
+	}
+
+	conditions
+	{
+		Global Variable(sigma_polarity_orbs_used) == True;
+		Global Variable(sigma_polarity_orbs_length_cur) < Global Variable(sigma_polarity_orbs_travel_var);
+		And(Compare(Global Variable(sigma_polarity_orbs_length_max), >, 0), Compare(Global Variable(sigma_polarity_orbs_length_max), >, 0))
+			== True;
+	}
+
+	actions
+	{
+		Set Global Variable(sigma_polarity_orbs_location, Global Variable(sigma_polarity_orbs_RC_pos));
+		Set Global Variable(sigma_polarity_orbs_facing, Global Variable(sigma_polarity_orbs_reflect));
+		Set Global Variable(sigma_polarity_orbs_travel_var, 0);
+		Set Global Variable(sigma_polarity_orbs_length_max, Subtract(Global Variable(sigma_polarity_orbs_length_max), Global Variable(
+			sigma_polarity_orbs_length_cur)));
+		Set Global Variable(sigma_polarity_orbs_normal, Ray Cast Hit Normal(Global Variable(sigma_polarity_orbs_location), Add(
+			Global Variable(sigma_polarity_orbs_location), Multiply(Global Variable(sigma_polarity_orbs_facing), Global Variable(
+			sigma_polarity_orbs_length_max))), All Players(All Teams), Global Variable(boss_reference), True));
+		Set Global Variable(sigma_polarity_orbs_RC_pos, Ray Cast Hit Position(Global Variable(sigma_polarity_orbs_location), Add(
+			Global Variable(sigma_polarity_orbs_location), Multiply(Global Variable(sigma_polarity_orbs_facing), Global Variable(
+			sigma_polarity_orbs_length_max))), All Players(Team 2), Global Variable(boss_reference), False));
+		Wait(0.032, Ignore Condition);
+		Set Global Variable(sigma_polarity_orbs_length_cur, Distance Between(Global Variable(sigma_polarity_orbs_location),
+			Ray Cast Hit Position(Global Variable(sigma_polarity_orbs_location), Add(Global Variable(sigma_polarity_orbs_location),
+			Multiply(Global Variable(sigma_polarity_orbs_facing), Global Variable(sigma_polarity_orbs_length_max))), All Players(
+			All Teams), Global Variable(boss_reference), True)));
+		Set Global Variable(sigma_polarity_orbs_reflect, Subtract(Global Variable(sigma_polarity_orbs_facing), Multiply(2, Multiply(
+			Dot Product(Global Variable(sigma_polarity_orbs_facing), Global w
+}
+
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Create In-World Text(All Players(All Teams), Custom String("{0} {1} {2}", Value In Array(Append To Array(Append To Array(
+		Empty Array, Icon String(Plus)), Null), Multiply(1, not(Compare(Count Of(Player Variable(Event Player, polarity_storage)), >, 0)))),
+		Value In Array(Append To Array(Append To Array(Empty Array, Icon String(Plus)), Null), Multiply(1, not(Compare(Count Of(
+		Player Variable(Event Player, polarity_storage)), >, 1)))), Custom String("{0} {1}", Value In Array(Append To Array(
+		Append To Array(Empty Array, Icon String(Plus)), Null), Multiply(1, not(Compare(Count Of(Player Variable(Event Player,
+		polarity_storage)), >, 2)))), Value In Array(Append To Array(Append To Array(Empty Array, Icon String(Plus)), Null), Multiply(1,
+		not(Compare(Count Of(Player Variable(Event Player, polarity_storage)), >, 3)))), Null)), Event Player, 1, Clip Against Surfaces,
+		Visible To Position and String, Blue, Default Visibility);
+}
+
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Players Within Radius(Event Player, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2), Filtered Array(
+		All Players(Team 2), And(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), Compare(Value In Array(
+		Player Variable(Event Player, polarity_storage), 0), ==, True))), Surfaces And All Barriers) > 0;
+}
+
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Distance Between(Event Player, Closest Player To(Event Player, Filtered Array(All Players(Team 2), And(Compare(Player Variable(
+		Event Player, polarity_storage), !=, Empty Array), Compare(Value In Array(Player Variable(Current Array Element,
+		polarity_storage), 0), ==, True))))) <= Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Apply Impulse(Event Player, Direction Towards(Closest Player To(Event Player, Filtered Array(All Players(Team 2), And(Compare(Player Variable(
+		Event Player, polarity_storage), !=, Empty Array), Compare(Value In Array(Player Variable(Current Array Element,
+		polarity_storage), 0), ==, True)))), Event Player), Raise To Power(Count Of(Player Variable(Event Player,
+		polarity_storage)), 2), To World, Cancel Contrary Motion);
+}
+
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Distance Between(Eye Position(Event Player), position of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(Team 2), And(
+		Compare(Player Variable(Current Array Element, polarity_storage), !=, Empty Array), Compare(Value In Array(Player Variable(
+		Current Array Element, polarity_storage), 0), ==, True)))))) <= Raise To Power(Count Of(Player Variable(Event Player,
+		polarity_storage)), 2);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Apply Impulse(Event Player, Direction Towards(position of(Closest Player To(Event Player, Filtered Array(All Players(Team 2), And(Compare(
+		Player Variable(Current Array Element, polarity_storage), !=, Empty Array), Compare(Value In Array(Player Variable(
+		Current Array Element, polarity_storage), 0), ==, True))))), Event Player), Raise To Power(Count Of(Player Variable(
+		Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+}
+actions
+{
+	Create HUD Text(All Players(All Teams), Custom String("positive pushback worked {0}", Distance Between(Eye Position(Event Player), Position Of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(
+		Team 2), And(And(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=,
+		Event Player)), Compare(Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True)))))), Null, Null), Null, Null, Top, 50, White,
+		White, White, Visible To and String, Default Visibility);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Distance Between(Eye Position(Event Player), Position Of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(
+		Team 2), And(Compare(Player Variable(Current Array Element, polarity_storage), !=, Empty Array), Compare(Value In Array(
+		Player Variable(Current Array Element, polarity_storage), 0), ==, True)))))) <= Raise To Power(Count Of(Player Variable(
+		Event Player, polarity_storage)), 2);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Distance Between(Eye Position(Event Player), Position Of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(
+		Team 2), And(And(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=,
+		Event Player)), Compare(Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True))))))
+		<= Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Apply Impulse(Event Player, Direction Towards(Position Of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(
+		Team 2), And(And(Compare(Player Variable(Event Player, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=,
+		Event Player)), Compare(Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True))))), Position Of(Event Player)), Raise To Power(Count Of(
+		Player Variable(Event Player, polarity_storage)), 2), To World, Cancel Contrary Motion);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Create HUD Text(All Players(All Teams), Custom String("positive pushback worked {0}", Distance Between(Eye Position(Event Player),
+		Position Of(Closest Player To(Eye Position(Event Player), Filtered Array(All Players(Team 2), And(And(Compare(Player Variable(
+		Current Array Element, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=, Event Player)), Compare(
+		Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True)))))), Null, Null), Null, Null, Left, 50,
+		White, White, White, Visible To and String, Default Visibility);
+}
+actions
+{
+	Create HUD Text(All Players(All Teams), Custom String("positive pushback worked {0}", Distance Between(Event Player, Closest Player To(Event Player, Filtered Array(Team 2, And(And(Compare(Player Variable(
+		Current Array Element, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=, Event Player)), Compare(
+		Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True))))), Null, Null), Null, Null, Left, 50,
+		White, White, White, Visible To and String, Default Visibility);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Distance Between(Event Player, Closest Player To(Event Player, Filtered Array(Team 2, And(And(Compare(Player Variable(
+		Current Array Element, polarity_storage), !=, Empty Array), Compare(Current Array Element, !=, Event Player)), Compare(
+		Value In Array(Player Variable(Current Array Element, polarity_storage), 0), ==, True))))) <= Raise To Power(Count Of(
+		Player Variable(Event Player, polarity_storage)), 2);
+}
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+actions
+{
+	Create HUD Text(All Players(All Teams), Distance Between(Eye Position(Event Player), Value In Array(Filtered Array(
+		Remove From Array(Players Within Radius(Event Player, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)),
+		2), Team 2, Off), Event Player), And(Compare(Player Variable(Current Array Element, polarity_storage), !=, Empty Array),
+		Value In Array(Player Variable(Current Array Element, polarity_storage), 0))), 0)), Null, Null, Left, 0, Green, White, White,
+		Visible To and String, Default Visibility);
+}
+
+variables
+{
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Is True For Any(Remove From Array(All Players(Team 2), Event Player), And(Compare(Player Variable(Current Array Element,
+		polarity_storage), !=, Empty Array), And(Compare(Value In Array(Player Variable(Current Array Element, polarity_storage), 0),
+		==, True), Compare(Distance Between(Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(
+		Event Player, polarity_storage)), 2))))) == True;
+}
+variables
+{
+	global:
+		34: sigma_positive_polarity_players
+
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Is True For Any(Remove From Array(Global Variable(sigma_positive_polarity_players), Event Player), Compare(Distance Between(
+		Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)))
+		== True;
+}
+variables
+{
+	global:
+		34: sigma_positive_polarity_players
+
+	player:
+		38: polarity_storage
+}
+
+conditions
+{
+	Is True For Any(Remove From Array(Global Variable(sigma_positive_polarity_players), Event Player), And(Compare(Distance Between(
+		Event Player, Current Array Element), <=, Raise To Power(Count Of(Player Variable(Event Player, polarity_storage)), 2)),
+		Is In Line of Sight(Event Player, Current Array Element, All Barriers Block LOS))) == True;
+}
+variables
+{
+	global:
+		0: init_vars
+		22: boss_reference
+		40: sigma_HP_time_storage
+		65: universal_loop_var
+		68: universal_var_check
+
+	player:
+		29: attacker_time_pos
+		30: attacker_time_facing
+		31: recording_time
+}
+
+rule("attacks time position")
+{
+	event
+	{
+		Ongoing - Each Player;
+		Team 2;
+		All;
+	}
+
+	conditions
+	{
+		Global Variable(universal_loop_var) != Global Variable(universal_var_check);
+		Player Variable(Event Player, recording_time) == True;
+	}
+
+	actions
+	{
+		Skip If(Compare(Count Of(Player Variable(Event Player, attacker_time_pos)), <, 16), 3);
+		Set Player Variable At Index(Event Player, attacker_time_pos, Modulo(Global Variable(universal_loop_var), 16), Position Of(
+			Event Player));
+		Modify Player Variable(Event Player, attacker_time_facing, Remove From Array By Index, 0);
+		Modify Global Variable(sigma_HP_time_storage, Remove From Array By Index, Health(Global Variable(boss_reference)));
+		Modify Player Variable(Event Player, attacker_time_pos, Append To Array, Position Of(Event Player));
+		Modify Player Variable(Event Player, attacker_time_facing, Append To Array, Facing Direction Of(Event Player));
+		Modify Global Variable(sigma_HP_time_storage, Append To Array, Health(Global Variable(boss_reference)));
+		Set Player Variable At Index(Event Player, attacker_time_facing, Modulo(Global Variable(universal_loop_var), 16),
+			Facing Direction Of(Event Player));
+		Set Global Variable At Index(universal_loop_var, Modulo(Global Variable(init_vars), 16), Health(Global Variable(boss_reference)));
+	}
+}
